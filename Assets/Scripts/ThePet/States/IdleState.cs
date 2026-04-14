@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class IdleState : ThePetState
@@ -16,6 +17,10 @@ public class IdleState : ThePetState
 
     protected override void OnStep(ThePet thePet)
     {
-        
+        Debug.Log("Im idle");
+        if(thePet.inputs.GetDrag())
+        {
+            thePet.states.Change<DragState>();
+        }
     }
 }

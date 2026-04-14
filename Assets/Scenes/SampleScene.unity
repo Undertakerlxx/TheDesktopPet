@@ -221,6 +221,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1449752931}
   - component: {fileID: 1449752930}
+  - component: {fileID: 1449752933}
+  - component: {fileID: 1449752932}
+  - component: {fileID: 1449752934}
   m_Layer: 0
   m_Name: Cat
   m_TagString: Untagged
@@ -297,6 +300,47 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1449752932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1449752929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fdce83ded694234ea31917a84266066, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  states:
+  - IdleState
+  - DragState
+--- !u!114 &1449752933
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1449752929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d57303d10420ca04d90dd8e7303a43a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputs: {fileID: 0}
+--- !u!114 &1449752934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1449752929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6eb7327ba05c9f4a83ab1d75ae957f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  actions: {fileID: -944628639613478452, guid: 4b571def5b68db44c84b986343adb397, type: 3}
 --- !u!1 &1974697108
 GameObject:
   m_ObjectHideFlags: 0
@@ -326,6 +370,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fea8008a72fdc984d9a9ac25d720a565, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  windowWidth: 512
+  windowHeight: 512
+  screenMarginRight: 80
+  screenMarginBottom: 120
+  topmost: 1
+  targetCamera: {fileID: 0}
+  useColorKeyFallback: 0
+  transparencyKey: {r: 1, g: 0, b: 1, a: 1}
+  allowEscapeToQuit: 1
 --- !u!4 &1974697110
 Transform:
   m_ObjectHideFlags: 0

@@ -16,6 +16,10 @@ public class DragState : ThePetState
 
     protected override void OnStep(ThePet thePet)
     {
-
+        Debug.Log("Im move");
+        if (!thePet.inputs.GetDrag())
+        {
+            thePet.states.Change<IdleState>();
+        }
     }
 }
