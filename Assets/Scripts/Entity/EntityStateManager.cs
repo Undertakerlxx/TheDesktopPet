@@ -37,7 +37,21 @@ public abstract class EntityStateManager<T> : EntityStateManager where T : Entit
     }
     protected virtual void InitializeStates()
     {
+        m_list = GetStateList();
 
+        foreach(var state in m_list)
+        {
+            var type = state.GetType();
+            if (!m_states.ContainsKey(type))
+            {
+                m_states.Add(type, state);
+            }
+        }
+
+        if(m_list.Count > 0)
+        {
+            current = m_list[0];
+        }
     }
 
     protected virtual void Start()
@@ -48,22 +62,42 @@ public abstract class EntityStateManager<T> : EntityStateManager where T : Entit
 
     public virtual void Change(int to)//°´ÕÕ×´Ì¬ÁÐ±íÅÅÐòÇÐ»»
     {
-
+        if(to >= 0 && to < m_list.Count)
+        {
+            Change(m_list[to]);
+        }
     }
 
     public virtual void Step()
     {
-
+        if (current != null && Time.timeScale > 0)
+        {
+            current.Step(entity);
+        }
     }
 
     public virtual void Change<TState>() where TState : EntityState<T>//°´ÕÕ×´Ì¬Ãû³ÆÇÐ»»
     {
-
+        var type = typeof(TState);
+        if (m_states.ContainsKey(type))
+        {
+            Change(m_states[type]);
+        }
     }
 
     public virtual void Change(EntityState<T> to)//¾ßÌåÇÐ»»Âß¼­
     {
+        if(to != null && Time.timeScale > 0)
+        {
+            if(current != null)
+            {
+                current.Exit(entity);
+                last = current;
+            }
 
+            current = to;
+            current.Enter(entity);
+        }
     }
 
 }

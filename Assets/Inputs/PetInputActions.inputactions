@@ -1,0 +1,54 @@
+{
+    "name": "PetInputActions",
+    "maps": [
+        {
+            "name": "DesktopPet",
+            "id": "b7ad0ede-bd21-427d-87d6-fe29db67bb95",
+            "actions": [
+                {
+                    "name": "Point",
+                    "type": "Value",
+                    "id": "71dbb5bd-3303-4e3b-bc0d-0a91ddcd0803",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "LeftClick",
+                    "type": "Button",
+                    "id": "091380e9-2c7e-4ec5-a033-a508aa1b6420",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "5673c6e2-84e5-4cc7-97ec-93ab93216327",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Point",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "135eb08b-547a-46e6-9691-6e2d7c58827c",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LeftClick",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
