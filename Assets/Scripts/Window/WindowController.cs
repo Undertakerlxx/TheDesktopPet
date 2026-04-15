@@ -34,6 +34,7 @@ public class WindowController : MonoBehaviour
 
     private IntPtr _hwnd = IntPtr.Zero;
     private bool _initialized;
+    private Vector2Int _windowPosition;
 
     /// <summary>
     /// 在场景开始运行后启动窗口初始化流程。
@@ -42,6 +43,8 @@ public class WindowController : MonoBehaviour
     {
         Debug.Log("WindowController Start");
         Application.runInBackground = true;
+        QualitySettings.vSyncCount = 0;
+        Application.targetFrameRate = 144;
         StartCoroutine(InitializeWindowCoroutine());
     }
 
@@ -203,7 +206,35 @@ public class WindowController : MonoBehaviour
     private void SetWindowSizeAndPosition(IntPtr hwnd, int x, int y, int width, int height)
     {
         IntPtr insertAfter = topmost ? HWND_TOPMOST : HWND_NOTOPMOST;
+        _windowPosition = new Vector2Int(x, y);
         SetWindowPos(hwnd, insertAfter, x, y, width, height, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+    }
+
+    /// <summary>
+    /// 获取当前窗口左上角的屏幕坐标。
+    /// </summary>
+    /// <returns>当前窗口左上角坐标。</returns>
+    public Vector2Int GetWindowPosition()
+    {
+        return _windowPosition;
+    }
+
+    /// <summary>
+    /// 将窗口移动到指定的屏幕坐标。
+    /// </summary>
+    /// <param name="position">目标窗口左上角坐标。</param>
+    public void SetWindowPosition(Vector2Int position)
+    {
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+        if (!_initialized || _hwnd == IntPtr.Zero)
+        {
+            return;
+        }
+
+        _windowPosition = position;
+        SetWindowPos(_hwnd, IntPtr.Zero, position.x, position.y, 0, 0,
+            SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+#endif
     }
 
     /// <summary>
@@ -320,6 +351,10 @@ public class WindowController : MonoBehaviour
     // SetWindowPos 使用的标记。
     private const uint SWP_SHOWWINDOW = 0x0040;
     private const uint SWP_FRAMECHANGED = 0x0020;
+    private const uint SWP_NOSIZE = 0x0001;
+    private const uint SWP_NOZORDER = 0x0004;
+    private const uint SWP_NOACTIVATE = 0x0010;
+    private const uint SWP_NOOWNERZORDER = 0x0200;
 
     // 屏幕尺寸索引。
     private const int SM_CXSCREEN = 0;

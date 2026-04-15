@@ -17,7 +17,6 @@ public class IdleState : ThePetState
 
     protected override void OnStep(ThePet thePet)
     {
-        Debug.Log("Im idle");
         if(thePet.inputs.GetDrag())
         {
             thePet.states.Change<DragState>();
