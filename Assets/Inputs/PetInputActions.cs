@@ -44,6 +44,15 @@ public partial class @PetInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RightClick"",
+                    ""type"": ""Button"",
+                    ""id"": ""1c0d9659-ef77-4b02-9184-27db48823a5c"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -68,6 +77,17 @@ public partial class @PetInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""LeftClick"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""658c0978-0ea1-4291-af05-21fba474337d"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RightClick"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -78,6 +98,7 @@ public partial class @PetInputActions: IInputActionCollection2, IDisposable
         m_DesktopPet = asset.FindActionMap("DesktopPet", throwIfNotFound: true);
         m_DesktopPet_Point = m_DesktopPet.FindAction("Point", throwIfNotFound: true);
         m_DesktopPet_LeftClick = m_DesktopPet.FindAction("LeftClick", throwIfNotFound: true);
+        m_DesktopPet_RightClick = m_DesktopPet.FindAction("RightClick", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -141,12 +162,14 @@ public partial class @PetInputActions: IInputActionCollection2, IDisposable
     private List<IDesktopPetActions> m_DesktopPetActionsCallbackInterfaces = new List<IDesktopPetActions>();
     private readonly InputAction m_DesktopPet_Point;
     private readonly InputAction m_DesktopPet_LeftClick;
+    private readonly InputAction m_DesktopPet_RightClick;
     public struct DesktopPetActions
     {
         private @PetInputActions m_Wrapper;
         public DesktopPetActions(@PetInputActions wrapper) { m_Wrapper = wrapper; }
         public InputAction @Point => m_Wrapper.m_DesktopPet_Point;
         public InputAction @LeftClick => m_Wrapper.m_DesktopPet_LeftClick;
+        public InputAction @RightClick => m_Wrapper.m_DesktopPet_RightClick;
         public InputActionMap Get() { return m_Wrapper.m_DesktopPet; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -162,6 +185,9 @@ public partial class @PetInputActions: IInputActionCollection2, IDisposable
             @LeftClick.started += instance.OnLeftClick;
             @LeftClick.performed += instance.OnLeftClick;
             @LeftClick.canceled += instance.OnLeftClick;
+            @RightClick.started += instance.OnRightClick;
+            @RightClick.performed += instance.OnRightClick;
+            @RightClick.canceled += instance.OnRightClick;
         }
 
         private void UnregisterCallbacks(IDesktopPetActions instance)
@@ -172,6 +198,9 @@ public partial class @PetInputActions: IInputActionCollection2, IDisposable
             @LeftClick.started -= instance.OnLeftClick;
             @LeftClick.performed -= instance.OnLeftClick;
             @LeftClick.canceled -= instance.OnLeftClick;
+            @RightClick.started -= instance.OnRightClick;
+            @RightClick.performed -= instance.OnRightClick;
+            @RightClick.canceled -= instance.OnRightClick;
         }
 
         public void RemoveCallbacks(IDesktopPetActions instance)
@@ -193,5 +222,6 @@ public partial class @PetInputActions: IInputActionCollection2, IDisposable
     {
         void OnPoint(InputAction.CallbackContext context);
         void OnLeftClick(InputAction.CallbackContext context);
+        void OnRightClick(InputAction.CallbackContext context);
     }
 }

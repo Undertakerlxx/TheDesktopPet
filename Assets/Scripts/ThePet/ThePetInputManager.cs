@@ -11,6 +11,7 @@ public class ThePetInputManager : MonoBehaviour
 
     protected InputAction m_drag;
     protected InputAction m_point;
+    protected InputAction m_rightclick;
     protected bool m_dragStartedOnPet;
 
     protected virtual void Awake()
@@ -36,7 +37,9 @@ public class ThePetInputManager : MonoBehaviour
     protected virtual void CacheActions()
     {
         m_drag = actions["LeftClick"];
+        m_rightclick = actions["RightClick"];
         m_point = actions["Point"];
+
     }
 
     protected virtual void OnDragStarted(InputAction.CallbackContext context)
