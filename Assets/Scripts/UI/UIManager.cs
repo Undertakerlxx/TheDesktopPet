@@ -13,6 +13,8 @@ namespace DesktopPet.UI
         public UIPanelLayer mainPanelLayer;
         public DesktopMenuPanelController mainPanelController;
         public UIWindowController[] windows;
+        public GameObject petRoot;
+        public GameObject statsDisplayRoot;
         public Vector2 panelAnchoredPosition = new Vector2(0f, 54f);
 
         private readonly Dictionary<UIWindowType, UIWindowController> windowLookup = new();
@@ -76,11 +78,12 @@ namespace DesktopPet.UI
         public void OpenWindow(UIWindowType windowType)
         {
             HideMainPanel();
-            HideAllWindows();
+            HideAllWindows(false);
 
             if (windowLookup.TryGetValue(windowType, out UIWindowController controller))
             {
                 controller.Open();
+                SetPetAndStatsVisible(false);
             }
         }
 
@@ -90,13 +93,28 @@ namespace DesktopPet.UI
             {
                 controller.Close();
             }
+
+            if (!HasVisibleWindow())
+            {
+                SetPetAndStatsVisible(true);
+            }
         }
 
         public void HideAllWindows()
         {
+            HideAllWindows(true);
+        }
+
+        private void HideAllWindows(bool restorePetAndStats)
+        {
             foreach (UIWindowController controller in windowLookup.Values)
             {
                 controller.Close();
+            }
+
+            if (restorePetAndStats)
+            {
+                SetPetAndStatsVisible(true);
             }
         }
 
@@ -152,6 +170,11 @@ namespace DesktopPet.UI
                 return;
             }
 
+            if (petRoot == null)
+            {
+                petRoot = pet.gameObject;
+            }
+
             if (petCamera == null)
             {
                 petCamera = pet.cam;
@@ -160,6 +183,15 @@ namespace DesktopPet.UI
             if (petCollider == null)
             {
                 petCollider = pet.entityCollider;
+            }
+
+            if (statsDisplayRoot == null)
+            {
+                PetStatsDisplayUI statsDisplay = FindFirstObjectByType<PetStatsDisplayUI>();
+                if (statsDisplay != null)
+                {
+                    statsDisplayRoot = statsDisplay.gameObject;
+                }
             }
         }
 
@@ -181,6 +213,34 @@ namespace DesktopPet.UI
         private static bool IsPointerOverUi()
         {
             return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        }
+
+        private bool HasVisibleWindow()
+        {
+            foreach (UIWindowController controller in windowLookup.Values)
+            {
+                if (controller != null && controller.windowLayer != null && controller.windowLayer.IsVisible)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void SetPetAndStatsVisible(bool visible)
+        {
+            AutoWirePetReferences();
+
+            if (petRoot != null)
+            {
+                petRoot.SetActive(visible);
+            }
+
+            if (statsDisplayRoot != null)
+            {
+                statsDisplayRoot.SetActive(visible);
+            }
         }
     }
 }
