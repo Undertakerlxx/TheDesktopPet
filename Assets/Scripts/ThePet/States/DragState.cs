@@ -11,6 +11,7 @@ public class DragState : ThePetState
             return;
         }
 
+        thePet.inputs.NotifyInteraction();
         thePet.dragStartPointerPosition = thePet.inputs.GetDesktopPointerPosition();
         thePet.dragStartWindowPosition = thePet.windowController.GetWindowPosition();
     }
@@ -24,6 +25,7 @@ public class DragState : ThePetState
     {
         if (thePet.inputs != null && thePet.windowController != null)
         {
+            thePet.inputs.NotifyInteraction();
             Vector2Int currentPointerPosition = thePet.inputs.GetDesktopPointerPosition();
             Vector2Int pointerDelta = currentPointerPosition - thePet.dragStartPointerPosition;
 

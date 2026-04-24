@@ -13,11 +13,13 @@ public class ThePetInputManager : MonoBehaviour
     protected InputAction m_point;
     protected InputAction m_rightclick;
     protected bool m_dragStartedOnPet;
+    protected float m_lastInteractionTime;
 
     protected virtual void Awake()
     {
         pet = GetComponent<ThePet>();
         CacheActions();
+        m_lastInteractionTime = Time.time;
     }
 
     protected virtual void OnEnable()
@@ -25,12 +27,14 @@ public class ThePetInputManager : MonoBehaviour
         actions.Enable();
         m_drag.started += OnDragStarted;
         m_drag.canceled += OnDragCanceled;
+        m_rightclick.started += OnRightClickStarted;
     }
 
     protected virtual void OnDisable()
     {
         m_drag.started -= OnDragStarted;
         m_drag.canceled -= OnDragCanceled;
+        m_rightclick.started -= OnRightClickStarted;
         actions.Disable();
     }
 
@@ -51,11 +55,28 @@ public class ThePetInputManager : MonoBehaviour
         }
 
         m_dragStartedOnPet = IsPointerDownOnPet(pet.cam, pet.entityCollider);
+        if (m_dragStartedOnPet)
+        {
+            NotifyInteraction();
+        }
     }
 
     protected virtual void OnDragCanceled(InputAction.CallbackContext context)
     {
         m_dragStartedOnPet = false;
+    }
+
+    protected virtual void OnRightClickStarted(InputAction.CallbackContext context)
+    {
+        if (pet == null || pet.cam == null || pet.entityCollider == null)
+        {
+            return;
+        }
+
+        if (IsPointerDownOnPet(pet.cam, pet.entityCollider))
+        {
+            NotifyInteraction();
+        }
     }
 
     public bool IsPointerDownOnPet(Camera cam,Collider2D petCollider)
@@ -72,6 +93,21 @@ public class ThePetInputManager : MonoBehaviour
     public virtual bool GetDrag()
     {
         return m_dragStartedOnPet && m_drag.IsPressed();
+    }
+
+    public virtual void NotifyInteraction()
+    {
+        m_lastInteractionTime = Time.time;
+    }
+
+    public virtual float GetSecondsSinceInteraction()
+    {
+        return Time.time - m_lastInteractionTime;
+    }
+
+    public virtual bool HasRecentInteraction(float threshold = 0.2f)
+    {
+        return GetSecondsSinceInteraction() <= threshold;
     }
 
     public virtual bool IsPointerPressed()

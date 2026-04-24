@@ -8479,6 +8479,7 @@ GameObject:
   - component: {fileID: 1449752934}
   - component: {fileID: 1449752935}
   - component: {fileID: 1449752936}
+  - component: {fileID: 1449752937}
   m_Layer: 0
   m_Name: Cat
   m_TagString: Untagged
@@ -8570,6 +8571,9 @@ MonoBehaviour:
   states:
   - IdleState
   - DragState
+  - LyingState
+  - HappyState
+  - SadState
 --- !u!114 &1449752933
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8586,6 +8590,8 @@ MonoBehaviour:
   entityCollider: {fileID: 0}
   inputs: {fileID: 0}
   windowController: {fileID: 0}
+  animatorComponent: {fileID: 1449752937}
+  statsManager: {fileID: 0}
 --- !u!114 &1449752934
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8660,6 +8666,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stats:
   - {fileID: 11400000, guid: db745c06dd5ff534ca28a9ff27cc5aa3, type: 2}
+--- !u!95 &1449752937
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1449752929}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 4091fe65d205fd440ab713544e6b3a46, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1482056725
 GameObject:
   m_ObjectHideFlags: 0

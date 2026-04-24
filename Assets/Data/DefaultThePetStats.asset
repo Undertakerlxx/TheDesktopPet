@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   intimacy: 30
   happiness: 50
-  energy: 70
+  energy: 71
   energy_max: 100
   focus: 100
   satiety: 100
