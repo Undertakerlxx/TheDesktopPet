@@ -6,6 +6,8 @@ public class ThePet : Entity<ThePet>
 {
     public ThePetInputManager inputs;
     public WindowController windowController;
+    public Animator animatorComponent;
+    public ThePetStatsManager statsManager;
     public Vector2Int dragStartPointerPosition { get; set; }
     public Vector2Int dragStartWindowPosition { get; set; }
 
@@ -19,10 +21,22 @@ public class ThePet : Entity<ThePet>
         windowController = FindObjectOfType<WindowController>();
     }
 
+    protected virtual void InitializeAnimator()
+    {
+        animatorComponent = GetComponent<Animator>();
+    }
+
+    protected virtual void InitializeStatsManager()
+    {
+        statsManager = GetComponent<ThePetStatsManager>();
+    }
+
     protected override void Awake()
     {
         base.Awake();
         InitializeInputs();
         InitializeWindowController();
+        InitializeAnimator();
+        InitializeStatsManager();
     }
 }
