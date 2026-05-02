@@ -1,11 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class ThePetInputManager : MonoBehaviour
 {
+    public event Action PetClicked;
+
     public InputActionAsset actions;
     public ThePet pet;
 
@@ -13,7 +16,14 @@ public class ThePetInputManager : MonoBehaviour
     protected InputAction m_point;
     protected InputAction m_rightclick;
     protected bool m_dragStartedOnPet;
+    protected bool m_pressStartedOnPet;
+    protected Vector2 m_pressStartPointerPosition;
+    protected float m_pressStartTime;
     protected float m_lastInteractionTime;
+
+    private const float ClickMaxDuration = 0.25f;
+    private const float ClickMaxMovement = 10f;
+    private const float DragStartMovement = 12f;
 
     protected virtual void Awake()
     {
@@ -51,19 +61,32 @@ public class ThePetInputManager : MonoBehaviour
         if (pet == null || pet.cam == null || pet.entityCollider == null)
         {
             m_dragStartedOnPet = false;
+            m_pressStartedOnPet = false;
             return;
         }
 
-        m_dragStartedOnPet = IsPointerDownOnPet(pet.cam, pet.entityCollider);
-        if (m_dragStartedOnPet)
+        bool pointerDownOnPet = IsPointerDownOnPet(pet.cam, pet.entityCollider);
+        m_dragStartedOnPet = pointerDownOnPet;
+        m_pressStartedOnPet = pointerDownOnPet;
+
+        if (pointerDownOnPet)
         {
+            m_pressStartPointerPosition = GetPointerPosition();
+            m_pressStartTime = Time.time;
             NotifyInteraction();
         }
     }
 
     protected virtual void OnDragCanceled(InputAction.CallbackContext context)
     {
+        if (m_pressStartedOnPet && IsSimpleClick())
+        {
+            NotifyInteraction();
+            PetClicked?.Invoke();
+        }
+
         m_dragStartedOnPet = false;
+        m_pressStartedOnPet = false;
     }
 
     protected virtual void OnRightClickStarted(InputAction.CallbackContext context)
@@ -92,7 +115,30 @@ public class ThePetInputManager : MonoBehaviour
 
     public virtual bool GetDrag()
     {
-        return m_dragStartedOnPet && m_drag.IsPressed();
+        return m_dragStartedOnPet && IsPointerPressed() && HasMovedEnoughForDrag();
+    }
+
+    public virtual bool IsSimpleClick()
+    {
+        if (!m_pressStartedOnPet)
+        {
+            return false;
+        }
+
+        float clickDuration = Time.time - m_pressStartTime;
+        float clickMovement = Vector2.Distance(m_pressStartPointerPosition, GetPointerPosition());
+        return clickDuration <= ClickMaxDuration && clickMovement <= ClickMaxMovement;
+    }
+
+    public virtual bool HasMovedEnoughForDrag()
+    {
+        if (!m_pressStartedOnPet)
+        {
+            return false;
+        }
+
+        float dragMovement = Vector2.Distance(m_pressStartPointerPosition, GetPointerPosition());
+        return dragMovement >= DragStartMovement;
     }
 
     public virtual void NotifyInteraction()

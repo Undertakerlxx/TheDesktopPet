@@ -36,7 +36,7 @@ public class DragState : ThePetState
         
         if (thePet.inputs == null || !thePet.inputs.IsPointerPressed())
         {
-            thePet.states.Change<IdleState>();
+            ChangeToIdleOrNeedState(thePet);
         }
     }
 }

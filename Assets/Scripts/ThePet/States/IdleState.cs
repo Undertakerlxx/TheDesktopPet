@@ -1,12 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class IdleState : ThePetState
 {
-    private const float LyingDelaySeconds = 30f;
-
     protected override void OnEnter(ThePet thePet)
     {
         if (thePet.animatorComponent != null)
@@ -22,37 +19,19 @@ public class IdleState : ThePetState
 
     protected override void OnStep(ThePet thePet)
     {
-        if (thePet.inputs.GetDrag())
+        if (TryEnterDragState(thePet))
         {
-            thePet.states.Change<DragState>();
             return;
         }
 
-        if (thePet.inputs.GetSecondsSinceInteraction() >= LyingDelaySeconds)
+        if (TryEnterPriorityNeedState(thePet))
         {
-            float happiness = GetCurrentHappiness(thePet);
-            if (happiness > 70f)
-            {
-                thePet.states.Change<HappyState>();
-            }
-            else if (happiness >= 50f)
-            {
-                thePet.states.Change<LyingState>();
-            }
-            else
-            {
-                thePet.states.Change<SadState>();
-            }
-        }
-    }
-
-    private static float GetCurrentHappiness(ThePet thePet)
-    {
-        if (thePet.statsManager == null || thePet.statsManager.current_stats == null)
-        {
-            return 50f;
+            return;
         }
 
-        return thePet.statsManager.current_stats.happiness;
+        if (HasBeenInactiveLongEnough(thePet))
+        {
+            ChangeToMoodState(thePet);
+        }
     }
 }

@@ -18,6 +18,8 @@ namespace DesktopPet.UI
         public Vector2 panelAnchoredPosition = new Vector2(0f, 54f);
 
         private readonly Dictionary<UIWindowType, UIWindowController> windowLookup = new();
+        private Renderer[] petRenderers;
+        private Collider2D[] petColliders;
 
         private void Awake()
         {
@@ -159,11 +161,6 @@ namespace DesktopPet.UI
 
         private void AutoWirePetReferences()
         {
-            if (petCamera != null && petCollider != null)
-            {
-                return;
-            }
-
             ThePet pet = FindFirstObjectByType<ThePet>();
             if (pet == null)
             {
@@ -193,6 +190,8 @@ namespace DesktopPet.UI
                     statsDisplayRoot = statsDisplay.gameObject;
                 }
             }
+
+            CachePetVisibilityTargets();
         }
 
         private bool IsPointerOnPet()
@@ -232,14 +231,59 @@ namespace DesktopPet.UI
         {
             AutoWirePetReferences();
 
-            if (petRoot != null)
-            {
-                petRoot.SetActive(visible);
-            }
+            SetPetVisible(visible);
 
             if (statsDisplayRoot != null)
             {
                 statsDisplayRoot.SetActive(visible);
+            }
+        }
+
+        private void CachePetVisibilityTargets()
+        {
+            if (petRoot == null)
+            {
+                petRenderers = null;
+                petColliders = null;
+                return;
+            }
+
+            petRenderers = petRoot.GetComponentsInChildren<Renderer>(true);
+            petColliders = petRoot.GetComponentsInChildren<Collider2D>(true);
+        }
+
+        private void SetPetVisible(bool visible)
+        {
+            if (petRoot == null)
+            {
+                return;
+            }
+
+            if (petRenderers == null || petColliders == null)
+            {
+                CachePetVisibilityTargets();
+            }
+
+            if (petRenderers != null)
+            {
+                foreach (Renderer rendererComponent in petRenderers)
+                {
+                    if (rendererComponent != null)
+                    {
+                        rendererComponent.enabled = visible;
+                    }
+                }
+            }
+
+            if (petColliders != null)
+            {
+                foreach (Collider2D colliderComponent in petColliders)
+                {
+                    if (colliderComponent != null)
+                    {
+                        colliderComponent.enabled = visible;
+                    }
+                }
             }
         }
     }
