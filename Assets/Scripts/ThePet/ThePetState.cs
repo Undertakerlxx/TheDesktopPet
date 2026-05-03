@@ -77,19 +77,23 @@ public abstract class ThePetState : EntityState<ThePet>
 
     protected static void ChangeToMoodState(ThePet thePet)
     {
+        TryRefreshMoodState(thePet);
+    }
+
+    protected static bool TryRefreshMoodState(ThePet thePet)
+    {
         float happiness = GetCurrentHappiness(thePet);
         if (happiness > HappyThreshold)
         {
-            thePet.states.Change<HappyState>();
+            return TryChangeMoodState<HappyState>(thePet);
         }
-        else if (happiness >= LyingThreshold)
+
+        if (happiness >= LyingThreshold)
         {
-            thePet.states.Change<LyingState>();
+            return TryChangeMoodState<LyingState>(thePet);
         }
-        else
-        {
-            thePet.states.Change<SadState>();
-        }
+
+        return TryChangeMoodState<SadState>(thePet);
     }
 
     protected static float GetCurrentHappiness(ThePet thePet)
@@ -136,5 +140,16 @@ public abstract class ThePetState : EntityState<ThePet>
             && thePet.states != null
             && thePet.states.current != null
             && thePet.states.current.GetType() == typeof(TState);
+    }
+
+    private static bool TryChangeMoodState<TState>(ThePet thePet) where TState : ThePetState
+    {
+        if (IsCurrentState<TState>(thePet))
+        {
+            return false;
+        }
+
+        thePet.states.Change<TState>();
+        return true;
     }
 }

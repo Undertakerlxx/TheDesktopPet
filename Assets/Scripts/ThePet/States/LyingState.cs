@@ -31,5 +31,7 @@ public class LyingState : ThePetState
         {
             return;
         }
+
+        TryRefreshMoodState(thePet);
     }
 }

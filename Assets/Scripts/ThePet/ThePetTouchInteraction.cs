@@ -55,7 +55,7 @@ public class ThePetTouchInteraction : MonoBehaviour
         if (statsManager != null && statsManager.current_stats != null)
         {
             statsManager.current_stats.intimacy += IntimacyIncreaseAmount;
-            statsManager.SaveCurrentStats();
+            statsManager.NotifyStatsChanged();
         }
 
         nextAvailableTouchTime = Time.time + TouchCooldownSeconds;

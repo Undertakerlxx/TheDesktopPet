@@ -31,5 +31,7 @@ public class SadState : ThePetState
         {
             return;
         }
+
+        TryRefreshMoodState(thePet);
     }
 }

@@ -33,5 +33,7 @@ public class HappyState : ThePetState
         {
             return;
         }
+
+        TryRefreshMoodState(thePet);
     }
 }
