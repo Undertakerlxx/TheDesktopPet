@@ -35,12 +35,12 @@ namespace DesktopPet.Save
             _ = StatsSavePath;
         }
 
-        public void SaveStats(ThePetStats stats)
+        public bool SaveStats(ThePetStats stats)
         {
             ThePetStatsSaveData data = ThePetStatsSaveData.FromStats(stats);
             if (data == null)
             {
-                return;
+                return false;
             }
 
             try
@@ -53,10 +53,12 @@ namespace DesktopPet.Save
 
                 string json = JsonUtility.ToJson(data, true);
                 File.WriteAllText(StatsSavePath, json);
+                return true;
             }
             catch (Exception exception)
             {
                 Debug.LogWarning($"GameSaveManager: failed to save pet stats. {exception.Message}");
+                return false;
             }
         }
 

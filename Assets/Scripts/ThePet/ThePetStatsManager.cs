@@ -6,6 +6,7 @@ using UnityEngine;
 public class ThePetStatsManager : EntityStatsManager<ThePetStats>
 {
     private const string DefaultStatsAssetName = "DefaultThePetStats";
+    private const float MaxStatValue = 100f;
 
     [System.Serializable]
     private class InspectorDebugStats
@@ -33,17 +34,62 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
         }
     }
 
+    [System.Serializable]
+    private class AutoSaveSettings
+    {
+        public bool enabled = true;
+        [Min(1f)] public float intervalSeconds = 15f;
+
+        public void Sanitize()
+        {
+            intervalSeconds = Mathf.Max(1f, intervalSeconds);
+        }
+    }
+
     [Header("Debug")]
     [SerializeField] private bool ignoreSavedStatsInEditor = true;
     [SerializeField] private bool useInspectorDebugStatsInEditor = true;
     [SerializeField] private InspectorDebugStats inspectorDebugStats = new();
 
+    [Header("Happiness Decay")]
+    [SerializeField] private bool enableHappinessDecay = true;
+    [SerializeField] private ThePetHappinessDecaySettings happinessDecaySettings = new();
+
+    [Header("Energy Recovery")]
+    [SerializeField] private bool enableEnergyRecovery = true;
+    [SerializeField] private ThePetEnergyRecoverySettings energyRecoverySettings = new();
+
+    [Header("Satiety Decay")]
+    [SerializeField] private bool enableSatietyDecay = true;
+    [SerializeField] private ThePetSatietyDecaySettings satietyDecaySettings = new();
+
+    [Header("Auto Save")]
+    [SerializeField] private AutoSaveSettings autoSaveSettings = new();
+
+    private ThePet pet;
     private ThePetStats runtimeStats;
+    private bool hasUnsavedChanges;
+    private float autoSaveElapsedSeconds;
+    private ThePetEnergyRecoveryProfile? cachedRecoveryProfile;
+
+    private void Awake()
+    {
+        pet = GetComponent<ThePet>();
+    }
 
     protected override void Start()
     {
         current_stats = CreateRuntimeStats(ResolveStatsAsset(0));
+        ResetRuntimeTracking();
         LoadCurrentStats();
+    }
+
+    private void Update()
+    {
+        TickHappinessDecay();
+        TickEnergyRecovery();
+        TickSatietyDecay();
+        TickAutoSave();
     }
 
     public override void Change(int to)
@@ -57,23 +103,35 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
         if (nextStats != null)
         {
             current_stats = nextStats;
+            ResetRuntimeTracking();
             LoadCurrentStats();
         }
     }
 
-    public void SaveCurrentStats()
+    public void NotifyStatsChanged()
+    {
+        hasUnsavedChanges = true;
+    }
+
+    public bool SaveCurrentStats()
     {
         if (current_stats == null)
         {
-            return;
+            return false;
         }
 
         if (ShouldIgnoreSavedStatsInCurrentEnvironment())
         {
-            return;
+            return false;
         }
 
-        GameSaveManager.Instance.SaveStats(current_stats);
+        bool saved = GameSaveManager.Instance.SaveStats(current_stats);
+        if (saved)
+        {
+            ResetDirtyState();
+        }
+
+        return saved;
     }
 
     protected virtual void OnApplicationPause(bool pauseStatus)
@@ -96,13 +154,13 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
             return;
         }
 
-        if (ShouldIgnoreSavedStatsInCurrentEnvironment())
+        if (!ShouldIgnoreSavedStatsInCurrentEnvironment())
         {
-            return;
+            ThePetStatsSaveData saveData = GameSaveManager.Instance.LoadStats();
+            saveData?.ApplyTo(current_stats);
         }
 
-        ThePetStatsSaveData saveData = GameSaveManager.Instance.LoadStats();
-        saveData?.ApplyTo(current_stats);
+        ClampRuntimeStats(current_stats);
     }
 
     private ThePetStats ResolveStatsAsset(int index)
@@ -168,5 +226,176 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
 
         inspectorDebugStats.ApplyTo(stats);
 #endif
+    }
+
+    private void TickHappinessDecay()
+    {
+        if (!enableHappinessDecay || current_stats == null)
+        {
+            return;
+        }
+
+        float totalDecayPerMinute = happinessDecaySettings.GetTotalDecayPerMinute(current_stats.satiety);
+        if (totalDecayPerMinute <= 0f)
+        {
+            return;
+        }
+
+        float nextHappiness = Mathf.Clamp(
+            current_stats.happiness - totalDecayPerMinute * Time.deltaTime / 60f,
+            0f,
+            MaxStatValue);
+
+        if (Mathf.Approximately(nextHappiness, current_stats.happiness))
+        {
+            return;
+        }
+
+        current_stats.happiness = nextHappiness;
+        NotifyStatsChanged();
+    }
+
+    private void TickEnergyRecovery()
+    {
+        if (!enableEnergyRecovery || current_stats == null)
+        {
+            return;
+        }
+
+        float recoveryPerMinute = energyRecoverySettings.GetRecoveryPerMinute(ResolveEnergyRecoveryProfile());
+        if (recoveryPerMinute <= 0f || current_stats.energy >= current_stats.energy_max)
+        {
+            return;
+        }
+
+        float nextEnergy = Mathf.Clamp(
+            current_stats.energy + recoveryPerMinute * Time.deltaTime / 60f,
+            0f,
+            current_stats.energy_max);
+
+        if (Mathf.Approximately(nextEnergy, current_stats.energy))
+        {
+            return;
+        }
+
+        current_stats.energy = nextEnergy;
+        NotifyStatsChanged();
+    }
+
+    private void TickSatietyDecay()
+    {
+        if (!enableSatietyDecay || current_stats == null)
+        {
+            return;
+        }
+
+        float decayPerMinute = satietyDecaySettings.decayPerMinute;
+        if (decayPerMinute <= 0f || current_stats.satiety <= 0f)
+        {
+            return;
+        }
+
+        float nextSatiety = Mathf.Clamp(
+            current_stats.satiety - decayPerMinute * Time.deltaTime / 60f,
+            0f,
+            MaxStatValue);
+
+        if (Mathf.Approximately(nextSatiety, current_stats.satiety))
+        {
+            return;
+        }
+
+        current_stats.satiety = nextSatiety;
+        NotifyStatsChanged();
+    }
+
+    private void TickAutoSave()
+    {
+        if (!autoSaveSettings.enabled || !hasUnsavedChanges || ShouldIgnoreSavedStatsInCurrentEnvironment())
+        {
+            return;
+        }
+
+        autoSaveElapsedSeconds += Time.deltaTime;
+        if (autoSaveElapsedSeconds >= autoSaveSettings.intervalSeconds)
+        {
+            autoSaveElapsedSeconds = 0f;
+            SaveCurrentStats();
+        }
+    }
+
+    private void ResetDirtyState()
+    {
+        hasUnsavedChanges = false;
+        autoSaveElapsedSeconds = 0f;
+    }
+
+    private void ResetRuntimeTracking()
+    {
+        ResetDirtyState();
+        cachedRecoveryProfile = null;
+    }
+
+    private static void ClampRuntimeStats(ThePetStats stats)
+    {
+        if (stats == null)
+        {
+            return;
+        }
+
+        stats.energy_max = Mathf.Max(0f, stats.energy_max);
+        stats.happiness = Mathf.Clamp(stats.happiness, 0f, MaxStatValue);
+        stats.energy = Mathf.Clamp(stats.energy, 0f, stats.energy_max);
+        stats.focus = Mathf.Clamp(stats.focus, 0f, MaxStatValue);
+        stats.satiety = Mathf.Clamp(stats.satiety, 0f, MaxStatValue);
+    }
+
+    private ThePetEnergyRecoveryProfile ResolveEnergyRecoveryProfile()
+    {
+        if (pet == null)
+        {
+            pet = GetComponent<ThePet>();
+        }
+
+        EntityState<ThePet> currentState = pet?.states?.current;
+        if (ThePetEnergyRecoveryProfileResolver.TryResolveFromState(currentState, out ThePetEnergyRecoveryProfile directProfile))
+        {
+            cachedRecoveryProfile = directProfile;
+            return directProfile;
+        }
+
+        if (ThePetEnergyRecoveryProfileResolver.IsTemporaryState(currentState))
+        {
+            if (cachedRecoveryProfile.HasValue)
+            {
+                return cachedRecoveryProfile.Value;
+            }
+
+            EntityState<ThePet> lastState = pet?.states?.last;
+            if (ThePetEnergyRecoveryProfileResolver.TryResolveFromState(lastState, out ThePetEnergyRecoveryProfile lastProfile))
+            {
+                cachedRecoveryProfile = lastProfile;
+                return lastProfile;
+            }
+        }
+
+        ThePetEnergyRecoveryProfile inferredProfile = ThePetEnergyRecoveryProfileResolver.InferFromStats(current_stats);
+        cachedRecoveryProfile = inferredProfile;
+        return inferredProfile;
+    }
+
+    private void OnValidate()
+    {
+        happinessDecaySettings ??= new ThePetHappinessDecaySettings();
+        happinessDecaySettings.Sanitize();
+
+        energyRecoverySettings ??= new ThePetEnergyRecoverySettings();
+        energyRecoverySettings.Sanitize();
+
+        satietyDecaySettings ??= new ThePetSatietyDecaySettings();
+        satietyDecaySettings.Sanitize();
+
+        autoSaveSettings ??= new AutoSaveSettings();
+        autoSaveSettings.Sanitize();
     }
 }
