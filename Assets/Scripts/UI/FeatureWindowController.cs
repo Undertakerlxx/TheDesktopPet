@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using DesktopPet.MiniGame;
 
 namespace DesktopPet.UI
 {
@@ -15,6 +16,8 @@ namespace DesktopPet.UI
         [TextArea]
         public string description;
 
+        private MiniGameWindowContentController runtimeContent;
+
         public override void Initialize(UIManager manager)
         {
             base.Initialize(manager);
@@ -29,13 +32,29 @@ namespace DesktopPet.UI
                 bodyText.text = description;
             }
 
-            if (closeButton == null)
+            if (closeButton != null)
             {
-                return;
+                closeButton.onClick.RemoveAllListeners();
+                closeButton.onClick.AddListener(() => uiManager.CloseWindow(windowType));
             }
 
-            closeButton.onClick.RemoveAllListeners();
-            closeButton.onClick.AddListener(() => uiManager.CloseWindow(windowType));
+            runtimeContent = GetComponent<MiniGameWindowContentController>();
+            if (runtimeContent != null)
+            {
+                runtimeContent.InitializeContent(this, manager);
+            }
+        }
+
+        public override void Open()
+        {
+            base.Open();
+            runtimeContent?.HandleWindowOpened();
+        }
+
+        public override void Close()
+        {
+            runtimeContent?.HandleWindowClosed();
+            base.Close();
         }
     }
 }
