@@ -160,6 +160,29 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
         return saved;
     }
 
+    /// <summary>
+    /// Applies the stat recovery produced by feeding the pet.
+    /// </summary>
+    /// <param name="satietyRestore">The amount of satiety to restore.</param>
+    /// <param name="happinessRestore">The amount of happiness to restore.</param>
+    /// <param name="intimacyRestore">The amount of intimacy to restore.</param>
+    /// <returns><see langword="true"/> if runtime stats were available and updated; otherwise, <see langword="false"/>.</returns>
+    public bool ApplyFeedingEffect(float satietyRestore, float happinessRestore, float intimacyRestore)
+    {
+        if (current_stats == null)
+        {
+            return false;
+        }
+
+        current_stats.satiety = Mathf.Clamp(current_stats.satiety + satietyRestore, 0f, MaxStatValue);
+        current_stats.happiness = Mathf.Clamp(current_stats.happiness + happinessRestore, 0f, MaxStatValue);
+        current_stats.intimacy = Mathf.Clamp(current_stats.intimacy + intimacyRestore, 0f, MaxStatValue);
+
+        NotifyStatsChanged();
+        SaveCurrentStats();
+        return true;
+    }
+
     protected virtual void OnApplicationPause(bool pauseStatus)
     {
         if (pauseStatus)
