@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using DesktopPet.MiniGame;
 using DesktopPet.Save;
 using UnityEngine;
 
@@ -111,6 +112,31 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
     public void NotifyStatsChanged()
     {
         hasUnsavedChanges = true;
+    }
+
+    public void ApplyMiniGameResult(MiniGameKind gameKind, bool success, bool brokeRecord, int score, float completionSeconds = -1f)
+    {
+        if (current_stats == null)
+        {
+            return;
+        }
+
+        float happinessDelta = success ? 5f : -2f;
+        if (brokeRecord)
+        {
+            happinessDelta += 3f;
+        }
+
+        current_stats.happiness = Mathf.Clamp(current_stats.happiness + happinessDelta, 0f, MaxStatValue);
+        current_stats.energy = Mathf.Clamp(current_stats.energy - GetMiniGameEnergyCost(gameKind), 0f, current_stats.energy_max);
+
+        float focusGain = GetMiniGameFocusGain(gameKind, score, completionSeconds);
+        if (focusGain > 0f)
+        {
+            current_stats.focus = Mathf.Clamp(current_stats.focus + focusGain, 0f, MaxStatValue);
+        }
+
+        NotifyStatsChanged();
     }
 
     public bool SaveCurrentStats()
@@ -328,6 +354,72 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
     {
         hasUnsavedChanges = false;
         autoSaveElapsedSeconds = 0f;
+    }
+
+    private static float GetMiniGameEnergyCost(MiniGameKind gameKind)
+    {
+        return gameKind switch
+        {
+            MiniGameKind.SchulteGrid => 4f,
+            MiniGameKind.ColorGrid => 3f,
+            MiniGameKind.EyeHandSpeed => 5f,
+            MiniGameKind.GeometryAtAGlance => 6f,
+            MiniGameKind.DinoRun => 8f,
+            MiniGameKind.DodgeBall => 10f,
+            _ => 0f
+        };
+    }
+
+    private static float GetMiniGameFocusGain(MiniGameKind gameKind, int score, float completionSeconds)
+    {
+        return gameKind switch
+        {
+            MiniGameKind.SchulteGrid => GetSchulteFocusGain(completionSeconds),
+            MiniGameKind.ColorGrid => GetScoreTierFocusGain(score),
+            MiniGameKind.EyeHandSpeed => GetScoreTierFocusGain(score),
+            MiniGameKind.GeometryAtAGlance => GetScoreTierFocusGain(score),
+            _ => 0f
+        };
+    }
+
+    private static float GetSchulteFocusGain(float completionSeconds)
+    {
+        if (completionSeconds <= 0f)
+        {
+            return 0f;
+        }
+
+        if (completionSeconds < 45f)
+        {
+            return 6f;
+        }
+
+        if (completionSeconds <= 60f)
+        {
+            return 4f;
+        }
+
+        return 3f;
+    }
+
+    private static float GetScoreTierFocusGain(int score)
+    {
+        if (score >= 10)
+        {
+            return 4f;
+        }
+
+        if (score >= 5)
+        {
+            return 3f;
+        }
+
+        if (score >= 1)
+        {
+            return 2f;
+        }
+
+        return 0f;
     }
 
     private void ResetRuntimeTracking()
