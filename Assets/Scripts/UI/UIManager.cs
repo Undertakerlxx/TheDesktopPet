@@ -20,6 +20,7 @@ namespace DesktopPet.UI
         private readonly Dictionary<UIWindowType, UIWindowController> windowLookup = new();
         private Renderer[] petRenderers;
         private Collider2D[] petColliders;
+        private FeedingPopupController feedingPopup;
 
         private void Awake()
         {
@@ -80,12 +81,37 @@ namespace DesktopPet.UI
         public void OpenWindow(UIWindowType windowType)
         {
             HideMainPanel();
+            CloseFeedingPopup(false);
             HideAllWindows(false);
 
             if (windowLookup.TryGetValue(windowType, out UIWindowController controller))
             {
                 controller.Open();
                 SetPetAndStatsVisible(false);
+            }
+        }
+
+        public void OpenFeedingPopup()
+        {
+            HideMainPanel();
+            HideAllWindows(false);
+            CloseFeedingPopup(false);
+
+            feedingPopup = FeedingPopupController.Show(transform, this);
+            SetPetAndStatsVisible(false);
+        }
+
+        public void NotifyFeedingPopupClosed(FeedingPopupController popup)
+        {
+            if (feedingPopup != popup)
+            {
+                return;
+            }
+
+            feedingPopup = null;
+            if (!HasVisibleWindow())
+            {
+                SetPetAndStatsVisible(true);
             }
         }
 
@@ -109,12 +135,31 @@ namespace DesktopPet.UI
 
         private void HideAllWindows(bool restorePetAndStats)
         {
+            CloseFeedingPopup(false);
+
             foreach (UIWindowController controller in windowLookup.Values)
             {
                 controller.Close();
             }
 
             if (restorePetAndStats)
+            {
+                SetPetAndStatsVisible(true);
+            }
+        }
+
+        private void CloseFeedingPopup(bool restorePetAndStats)
+        {
+            if (feedingPopup == null)
+            {
+                return;
+            }
+
+            FeedingPopupController popup = feedingPopup;
+            feedingPopup = null;
+            Destroy(popup.gameObject);
+
+            if (restorePetAndStats && !HasVisibleWindow())
             {
                 SetPetAndStatsVisible(true);
             }
