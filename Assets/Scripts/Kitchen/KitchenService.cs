@@ -1,4 +1,5 @@
 using System;
+using DesktopPet.Achievements;
 using DesktopPet.Catalog;
 using DesktopPet.Progress;
 
@@ -129,6 +130,7 @@ namespace DesktopPet.Kitchen
             progressService.AddDish(recipe.id, 1);
             Progress.cookingJobs.Remove(job);
             progressService.Save();
+            AchievementEventRecorder.Record(AchievementEventType.KitchenCook);
             return true;
         }
 

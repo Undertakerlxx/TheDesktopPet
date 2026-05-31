@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DesktopPet.Achievements;
 using DesktopPet.Feeding;
 using DesktopPet.Kitchen;
 using DesktopPet.Progress;
@@ -233,6 +234,12 @@ namespace DesktopPet.UI
             bool success = feedingService.TryFeed(recipe.id, out FeedingResult result);
             if (success)
             {
+                AchievementEventRecorder.Record(AchievementEventType.Feed);
+                if (result.matchedPreference)
+                {
+                    AchievementEventRecorder.Record(AchievementEventType.PreferredFeed);
+                }
+
                 string statFeedback = ApplyRecipeStats(recipe, result.matchedPreference);
                 sourceRow.ShowFeedback($"{result.message} {statFeedback}");
             }

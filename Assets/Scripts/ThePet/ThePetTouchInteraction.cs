@@ -1,4 +1,5 @@
-﻿using DesktopPet.Save;
+using DesktopPet.Achievements;
+using DesktopPet.Save;
 using DesktopPet.UI;
 using UnityEngine;
 
@@ -60,6 +61,7 @@ public class ThePetTouchInteraction : MonoBehaviour
 
         nextAvailableTouchTime = Time.time + TouchCooldownSeconds;
         inputManager?.NotifyInteraction();
+        AchievementEventRecorder.Record(AchievementEventType.Touch);
         pet.states.Change<StretchState>();
     }
 
