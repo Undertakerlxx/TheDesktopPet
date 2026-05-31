@@ -1,10 +1,12 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Animator))]
 public class PetSkinManager : MonoBehaviour
 {
     private const string DefaultLibraryResourcePath = "PetSkinLibrary";
+    private const string SelectedSkinPlayerPrefsKey = "PetSkinManager.SelectedSkinIndex";
     private const string IdleStateName = "Idle";
     private const string HappyStateName = "Happy";
     private const string HungryStateName = "Hungry";
@@ -35,10 +37,14 @@ public class PetSkinManager : MonoBehaviour
     private AnimationClip baseSleepClip;
     private AnimationClip baseStretchClip;
     private ThePet pet;
+    private ThePetStatsManager statsManager;
+    private PetSkinUnlockService unlockService;
+    private bool saveSelectionEnabled;
 
     private void Awake()
     {
         pet = GetComponent<ThePet>();
+        statsManager = GetComponent<ThePetStatsManager>();
 
         if (animatorComponent == null)
         {
@@ -79,6 +85,19 @@ public class PetSkinManager : MonoBehaviour
         }
     }
 
+    private IEnumerator Start()
+    {
+        yield return null;
+        saveSelectionEnabled = true;
+
+        int savedSkinIndex = PlayerPrefs.GetInt(SelectedSkinPlayerPrefsKey, selectedSkinIndex);
+        int unlockedSkinIndex = GetUnlockedSelectedSkinIndex(savedSkinIndex);
+        if (unlockedSkinIndex != selectedSkinIndex)
+        {
+            ApplySkin(unlockedSkinIndex);
+        }
+    }
+
     public int GetSkinCount()
     {
         return skinLibrary != null ? skinLibrary.Count : 0;
@@ -97,6 +116,31 @@ public class PetSkinManager : MonoBehaviour
     public Sprite GetSkinPreviewSprite(int index)
     {
         return skinLibrary != null ? skinLibrary.GetPreviewSprite(index) : null;
+    }
+
+    public bool IsSkinUnlocked(int index)
+    {
+        if (skinLibrary == null || index < 0 || index >= skinLibrary.Count)
+        {
+            return false;
+        }
+
+        return GetUnlockService().IsUnlocked(skinLibrary.GetUnlockCondition(index));
+    }
+
+    public string GetSkinUnlockDescription(int index)
+    {
+        return skinLibrary != null ? skinLibrary.GetUnlockDescription(index) : string.Empty;
+    }
+
+    public string GetSkinUnlockProgressText(int index)
+    {
+        if (skinLibrary == null || index < 0 || index >= skinLibrary.Count)
+        {
+            return string.Empty;
+        }
+
+        return GetUnlockService().GetProgressText(skinLibrary.GetUnlockCondition(index));
     }
 
     public bool ApplySkin(int index)
@@ -122,6 +166,11 @@ public class PetSkinManager : MonoBehaviour
         }
 
         int clampedIndex = Mathf.Clamp(index, 0, skinCount - 1);
+        if (!IsSkinUnlocked(clampedIndex))
+        {
+            return false;
+        }
+
         AnimationClip selectedIdleClip = skinLibrary.GetIdleClip(clampedIndex);
         AnimationClip selectedHappyClip = skinLibrary.GetHappyClip(clampedIndex);
         AnimationClip selectedHungryClip = skinLibrary.GetHungryClip(clampedIndex);
@@ -149,6 +198,11 @@ public class PetSkinManager : MonoBehaviour
         overrideController[BaseStretchClipName] = selectedStretchClip;
         animatorComponent.runtimeAnimatorController = overrideController;
         selectedSkinIndex = clampedIndex;
+        if (saveSelectionEnabled)
+        {
+            PlayerPrefs.SetInt(SelectedSkinPlayerPrefsKey, selectedSkinIndex);
+            PlayerPrefs.Save();
+        }
 
         if (pet != null && pet.states != null && pet.states.current != null)
         {
@@ -184,6 +238,28 @@ public class PetSkinManager : MonoBehaviour
         }
 
         return true;
+    }
+
+    private PetSkinUnlockService GetUnlockService()
+    {
+        if (unlockService == null)
+        {
+            unlockService = new PetSkinUnlockService(statsManager);
+        }
+
+        return unlockService;
+    }
+
+    private int GetUnlockedSelectedSkinIndex(int requestedIndex)
+    {
+        int skinCount = skinLibrary != null ? skinLibrary.Count : 0;
+        if (skinCount <= 0)
+        {
+            return 0;
+        }
+
+        int clampedIndex = Mathf.Clamp(requestedIndex, 0, skinCount - 1);
+        return IsSkinUnlocked(clampedIndex) ? clampedIndex : 0;
     }
 
     private static AnimationClip FindBaseClip(RuntimeAnimatorController controller, string clipName)

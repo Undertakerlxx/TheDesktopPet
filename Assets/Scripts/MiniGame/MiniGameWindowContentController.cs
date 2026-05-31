@@ -138,6 +138,7 @@ namespace DesktopPet.MiniGame
             cachedStatsManager?.ApplyMiniGameResult(gameKind, success, brokeRecord, score, completionSeconds);
 
             AchievementEventRecorder.Record(AchievementEventType.MiniGamePlayed);
+            AchievementEventRecorder.Record($"MiniGamePlayed.{gameKind}");
             if (success)
             {
                 AchievementEventRecorder.Record(GetSuccessEventType(gameKind));

@@ -10,7 +10,17 @@ namespace DesktopPet.Achievements
 
         public static void Record(AchievementEventType eventType, int count = 1, float amount = 0f)
         {
+            Record(eventType.ToString(), count, amount);
+        }
+
+        public static void Record(string key, int count = 1, float amount = 0f)
+        {
             if (count <= 0 && amount <= 0f)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(key))
             {
                 return;
             }
@@ -18,14 +28,14 @@ namespace DesktopPet.Achievements
             try
             {
                 AchievementProgressData data = Load();
-                AchievementCounter counter = data.GetOrCreateCounter(eventType.ToString());
+                AchievementCounter counter = data.GetOrCreateCounter(key);
                 counter.count += Math.Max(0, count);
                 counter.totalAmount += Math.Max(0f, amount);
                 Save(data);
             }
             catch (Exception exception)
             {
-                Debug.LogWarning($"AchievementEventRecorder: failed to record {eventType}. {exception.Message}");
+                Debug.LogWarning($"AchievementEventRecorder: failed to record {key}. {exception.Message}");
             }
         }
 

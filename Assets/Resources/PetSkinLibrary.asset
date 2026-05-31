@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skins:
   - displayName: "\u732B1"
+    unlockCondition: 0
+    unlockDescription: "\u521D\u59CB\u89E3\u9501"
     previewSprite: {fileID: -926048052, guid: 18e6d971025d9054d8abb92dac9d0c13, type: 3}
     idleClip: {fileID: 7400000, guid: c21db54ed83b7b543bdb02fcc67d4d1c, type: 2}
     happyClip: {fileID: 7400000, guid: aac9dbec8dedd3345a9b9887cb74ae92, type: 2}
@@ -23,6 +25,8 @@ MonoBehaviour:
     sleepClip: {fileID: 7400000, guid: d584bf1714114e0da71d7c0a3784d9d4, type: 2}
     stretchClip: {fileID: 7400000, guid: 2a352acfd1f542399ac07f3c6112ee29, type: 2}
   - displayName: "\u732B2"
+    unlockCondition: 1
+    unlockDescription: "\u4EB2\u5BC6\u5EA6\u8FBE\u5230 50"
     previewSprite: {fileID: 1741575186, guid: 43bfa2b184972d548a99ff0ee9ab7a9f, type: 3}
     idleClip: {fileID: 7400000, guid: 5946bf76ee33f404e90cba155a4f77de, type: 2}
     happyClip: {fileID: 7400000, guid: d37f44f82b48a2d48a7b22dc9c4991b1, type: 2}
@@ -32,6 +36,8 @@ MonoBehaviour:
     sleepClip: {fileID: 7400000, guid: ba6ddc45b3030df4ea661214f54ce69f, type: 2}
     stretchClip: {fileID: 7400000, guid: c129f0852cf020446afbbf453fc05feb, type: 2}
   - displayName: "\u732B3"
+    unlockCondition: 2
+    unlockDescription: "\u519C\u573A\u7B49\u7EA7\u8FBE\u5230 Lv3\uFF0C\u5E76\u7D2F\u8BA1\u6536\u83B7\u4F5C\u7269 10 \u6B21"
     previewSprite: {fileID: 29325209, guid: c8f0e7e1d76fe1c409039ade1ac6c99c, type: 3}
     idleClip: {fileID: 7400000, guid: 73055e960f610f74aad02dfc8d0b1ce5, type: 2}
     happyClip: {fileID: 7400000, guid: 445f210f3c897ab409ac21b39d630404, type: 2}
@@ -41,6 +47,8 @@ MonoBehaviour:
     sleepClip: {fileID: 7400000, guid: 3f22543ae1ac4b9409238430160b97f4, type: 2}
     stretchClip: {fileID: 7400000, guid: 46b742d152594584bab60f0741c3809a, type: 2}
   - displayName: "\u732B4"
+    unlockCondition: 3
+    unlockDescription: "\u6210\u529F\u5B8C\u6210\u6599\u7406 5 \u6B21\uFF0C\u5E76\u5B8C\u6210\u504F\u597D\u5582\u98DF 1 \u6B21"
     previewSprite: {fileID: 2122696235, guid: 7db1a22237deab94bba42738b37b721d, type: 3}
     idleClip: {fileID: 7400000, guid: c8a9df07219e09149ac53c1cf13b0011, type: 2}
     happyClip: {fileID: 7400000, guid: bf1d1b719ce8eea409c8c80297bdce58, type: 2}
@@ -50,6 +58,8 @@ MonoBehaviour:
     sleepClip: {fileID: 7400000, guid: 3c0134df1c9fe954d8ffab8e8d3635e2, type: 2}
     stretchClip: {fileID: 7400000, guid: 6762904ddc5a6484482aef63a486d83a, type: 2}
   - displayName: "\u732B5"
+    unlockCondition: 4
+    unlockDescription: "\u4EFB\u610F\u5C0F\u6E38\u620F\u6210\u529F 5 \u6B21\uFF0C\u4E14\u81F3\u5C11\u73A9\u8FC7 3 \u79CD\u4E0D\u540C\u5C0F\u6E38\u620F"
     previewSprite: {fileID: 700863220, guid: 29c3063ec7972754b8fb8b4cdef4b34e, type: 3}
     idleClip: {fileID: 7400000, guid: bd662e147196fd54188cc202670c35ec, type: 2}
     happyClip: {fileID: 7400000, guid: 2bd88151538acea4f989d4d54fd188a8, type: 2}
@@ -59,6 +69,8 @@ MonoBehaviour:
     sleepClip: {fileID: 7400000, guid: 828990a1495a9204491cef41bba4f141, type: 2}
     stretchClip: {fileID: 7400000, guid: cd80ca32f3ce8704a8f0f163d0d0bde2, type: 2}
   - displayName: "\u732B6"
+    unlockCondition: 5
+    unlockDescription: "\u5DF2\u9886\u53D6\u6210\u5C31 8 \u4E2A\uFF0C\u6216\u56FE\u9274\u5B8C\u6210\u5EA6\u8FBE\u5230 50%"
     previewSprite: {fileID: 1193388614, guid: db733f50b3f2f334092e5efcc17b4916, type: 3}
     idleClip: {fileID: 7400000, guid: d23f15b28d379ae4c8e5849563770419, type: 2}
     happyClip: {fileID: 7400000, guid: 5dfb1a30f54fa35468fb68a5601bd8bc, type: 2}

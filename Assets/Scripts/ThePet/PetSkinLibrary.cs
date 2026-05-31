@@ -5,10 +5,22 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "PetSkinLibrary", menuName = "DesktopPet/Pet Skin Library")]
 public class PetSkinLibrary : ScriptableObject
 {
+    public enum UnlockCondition
+    {
+        None,
+        Intimacy50,
+        FarmLevel3AndHarvest10,
+        KitchenCook5AndPreferredFeed1,
+        MiniGameSuccess5AndPlayed3Kinds,
+        AchievementClaimed8OrCatalog50Percent
+    }
+
     [Serializable]
     public class SkinDefinition
     {
         public string displayName;
+        public UnlockCondition unlockCondition;
+        public string unlockDescription;
         public Sprite previewSprite;
         public AnimationClip idleClip;
         public AnimationClip happyClip;
@@ -36,6 +48,16 @@ public class PetSkinLibrary : ScriptableObject
     public string GetDisplayName(int index)
     {
         return GetSkin(index)?.displayName ?? string.Empty;
+    }
+
+    public UnlockCondition GetUnlockCondition(int index)
+    {
+        return GetSkin(index)?.unlockCondition ?? UnlockCondition.None;
+    }
+
+    public string GetUnlockDescription(int index)
+    {
+        return GetSkin(index)?.unlockDescription ?? string.Empty;
     }
 
     public Sprite GetPreviewSprite(int index)
