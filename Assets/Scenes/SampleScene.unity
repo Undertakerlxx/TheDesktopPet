@@ -7492,7 +7492,7 @@ GameObject:
   - component: {fileID: 1310015432}
   - component: {fileID: 1310015431}
   - component: {fileID: 1310015430}
-  - component: {fileID: 1310015428}
+  - component: {fileID: 1310015434}
   m_Layer: 0
   m_Name: AchievementWindow
   m_TagString: Untagged
@@ -7500,25 +7500,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1310015428
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1310015427}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 870c74ac2a0104248933a9e1d3985fb2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  windowType: 5
-  windowLayer: {fileID: 1310015430}
-  titleText: {fileID: 1678603987}
-  bodyText: {fileID: 491107531}
-  closeButton: {fileID: 286991979}
-  title: "\u6210\u5C31"
-  description: "\u8FD9\u91CC\u9884\u7559\u6210\u5C31\u5217\u8868\u3001\u8FBE\u6210\u8FDB\u5EA6\u4E0E\u5956\u52B1\u5C55\u793A\u3002"
 --- !u!224 &1310015429
 RectTransform:
   m_ObjectHideFlags: 0
@@ -7604,6 +7585,23 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &1310015434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1310015427}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9db63f9e956c7174288afa6d6d6ac720, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  windowType: 5
+  windowLayer: {fileID: 1310015430}
+  titleText: {fileID: 1678603987}
+  contentRoot: {fileID: 491107529}
+  closeButton: {fileID: 286991979}
 --- !u!1 &1311959458
 GameObject:
   m_ObjectHideFlags: 0
@@ -8104,18 +8102,6 @@ MonoBehaviour:
   closeButton: {fileID: 967192444}
   title: "\u8EB2\u907F\u7403"
   description: "\u8FD9\u91CC\u9884\u7559\u8EB2\u907F\u7403\u5C0F\u6E38\u620F\u5165\u53E3\u4E0E\u73A9\u6CD5\u8BF4\u660E\u3002"
---- !u!114 &1360964317
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1360964310}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7f97d7a4d7e4ff4ad7fba5f3d2d9f04, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &1360964312
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8201,6 +8187,18 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &1360964317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1360964310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7f97d7a4d7e4ff4ad7fba5f3d2d9f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1361578509
 GameObject:
   m_ObjectHideFlags: 0
@@ -8918,6 +8916,29 @@ MonoBehaviour:
     energy_max: 100
     focus: 100
     satiety: 60
+  enableHappinessDecay: 1
+  happinessDecaySettings:
+    baseDecayPerMinute: 0.5
+    highSatietyDecayPerMinute: 0.3
+    mediumSatietyDecayPerMinute: 0.5
+    lowSatietyDecayPerMinute: 0.8
+    criticalSatietyDecayPerMinute: 1.2
+    highSatietyThreshold: 80
+    mediumSatietyThreshold: 50
+    lowSatietyThreshold: 30
+  enableEnergyRecovery: 1
+  energyRecoverySettings:
+    idleRecoveryPerMinute: 5
+    happyRecoveryPerMinute: 5
+    sadRecoveryPerMinute: 2
+    hungryRecoveryPerMinute: 2
+    sleepRecoveryPerMinute: 8
+  enableSatietyDecay: 1
+  satietyDecaySettings:
+    decayPerMinute: 5
+  autoSaveSettings:
+    enabled: 1
+    intervalSeconds: 15
 --- !u!95 &1449752937
 Animator:
   serializedVersion: 7
@@ -9210,7 +9231,7 @@ MonoBehaviour:
   - {fileID: 2085783699}
   - {fileID: 1629388070}
   - {fileID: 530666768}
-  - {fileID: 1310015428}
+  - {fileID: 1310015434}
   - {fileID: 1311959464}
   - {fileID: 1255212616}
   - {fileID: 2092585862}
@@ -11128,6 +11149,7 @@ MonoBehaviour:
   miniGameButton: {fileID: 526028573}
   farmButton: {fileID: 279983342}
   kitchenButton: {fileID: 488696200}
+  feedingButton: {fileID: 0}
   achievementButton: {fileID: 2126913854}
 --- !u!114 &1829731905
 MonoBehaviour:
@@ -12910,6 +12932,18 @@ MonoBehaviour:
   closeButton: {fileID: 1482056727}
   title: "\u8212\u5C14\u7279\u65B9\u683C"
   description: "\u8FD9\u91CC\u9884\u7559\u8212\u5C14\u7279\u65B9\u683C\u5C0F\u6E38\u620F\u5165\u53E3\u4E0E\u73A9\u6CD5\u8BF4\u660E\u3002"
+--- !u!114 &2092585863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2092585856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f6b4fd1b2ce4d26a8cd6478e3d7b201, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2097759195
 GameObject:
   m_ObjectHideFlags: 0
@@ -13031,18 +13065,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2097759195}
   m_CullTransparentMesh: 1
---- !u!114 &2092585863
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2092585856}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f6b4fd1b2ce4d26a8cd6478e3d7b201, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &2126913853
 GameObject:
   m_ObjectHideFlags: 0

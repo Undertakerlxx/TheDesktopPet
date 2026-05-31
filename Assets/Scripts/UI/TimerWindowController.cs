@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DesktopPet.Achievements;
 using DesktopPet.Storage;
 using DesktopPet.Timer;
 using UnityEngine;
@@ -164,6 +165,7 @@ namespace DesktopPet.UI
             TimerHistoryRecord record = timer.Finish();
             records.Insert(0, record);
             historyStorage.Save(records);
+            AchievementEventRecorder.Record(AchievementEventType.TimerCompleted, 1, record.elapsedSeconds);
 
             if (startButtonText != null)
             {
