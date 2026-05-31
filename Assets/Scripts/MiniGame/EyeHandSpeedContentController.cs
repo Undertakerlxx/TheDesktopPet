@@ -9,7 +9,8 @@ namespace DesktopPet.MiniGame
     {
         private const string BestScoreKey = "MiniGame.EyeHandSpeed.BestScore";
         private const float TotalRoundTime = 30f;
-        private const int SuccessScoreThreshold = 5;
+        private const int ScorePerHit = 100;
+        private const int SuccessScoreThreshold = 1000;
 
         private readonly List<Button> cellButtons = new();
         private readonly List<Text> cellLabels = new();
@@ -106,6 +107,7 @@ namespace DesktopPet.MiniGame
 
             SetGridInteractable(false);
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         private void Update()
@@ -137,6 +139,17 @@ namespace DesktopPet.MiniGame
         protected override void RefreshView()
         {
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
+        }
+
+        public override void HandleWindowClosed()
+        {
+            if (isPlaying)
+            {
+                FinishGame("\u672c\u5c40\u63d0\u524d\u7ed3\u675f\u3002");
+            }
+
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         protected override void ResetRuntimeState()
@@ -156,6 +169,13 @@ namespace DesktopPet.MiniGame
 
         private void StartGame()
         {
+            if (!TryBeginMiniGameSession(resultText))
+            {
+                UpdateTexts();
+                RefreshMiniGameAvailability(resultText, actionButton);
+                return;
+            }
+
             isPlaying = true;
             rewardApplied = false;
             remainingTime = TotalRoundTime;
@@ -171,7 +191,8 @@ namespace DesktopPet.MiniGame
         private void GenerateRound()
         {
             currentTarget = RandomTarget();
-            int bombCount = Mathf.Clamp(1 + score / 4, 1, 3);
+            int clearedTargets = score / ScorePerHit;
+            int bombCount = Mathf.Clamp(1 + clearedTargets / 4, 1, 3);
             currentTiles = new EyeHandTileData[cellButtons.Count];
 
             List<int> availableIndices = new();
@@ -199,7 +220,7 @@ namespace DesktopPet.MiniGame
                 ApplyTileVisual(index, currentTiles[index]);
             }
 
-            roundRemaining = Mathf.Max(0.85f, 2.2f - (score * 0.06f));
+            roundRemaining = Mathf.Max(0.85f, 2.2f - (clearedTargets * 0.06f));
             promptText.text = $"\u70b9\u51fb: {currentTarget.ColorName}{currentTarget.ShapeName}";
         }
 
@@ -220,7 +241,7 @@ namespace DesktopPet.MiniGame
             switch (tileData.Role)
             {
                 case EyeHandTileRole.Target:
-                    score++;
+                    score += ScorePerHit;
                     resultText.text = "\u547d\u4e2d\u76ee\u6807\u3002";
                     GenerateRound();
                     break;
@@ -252,22 +273,25 @@ namespace DesktopPet.MiniGame
         {
             isPlaying = false;
             SetGridInteractable(false);
-            bool brokeRecord = score > bestScore;
-            if (score > bestScore)
+            int adjustedScore = ApplySessionScoreModifier(score, out _);
+            bool brokeRecord = adjustedScore > bestScore;
+            if (adjustedScore > bestScore)
             {
-                bestScore = score;
+                bestScore = adjustedScore;
                 PlayerPrefs.SetInt(BestScoreKey, bestScore);
                 PlayerPrefs.Save();
                 message = $"{message} \u5237\u65b0\u4e86\u6700\u4f73\u6210\u7ee9\u3002";
             }
 
-            resultText.text = $"{message} \u672c\u6b21\u5f97\u5206 {score}\u3002";
+            string scoreBreakdown = FormatSessionModifierBreakdown(score, adjustedScore);
+            string modifierSuffix = string.IsNullOrEmpty(SessionScoreModifierLabel) ? string.Empty : $" ({SessionScoreModifierLabel})";
+            resultText.text = $"{message} \u672c\u6b21\u5f97\u5206 {scoreBreakdown}{modifierSuffix}\u3002";
             promptText.text = "\u70b9\u51fb\u5f00\u59cb";
             actionButton.GetComponentInChildren<Text>().text = "\u518d\u73a9\u4e00\u6b21";
 
             if (!rewardApplied)
             {
-                ApplyMiniGameResult(MiniGameKind.EyeHandSpeed, score >= SuccessScoreThreshold, brokeRecord, score);
+                ApplyMiniGameResult(MiniGameKind.EyeHandSpeed, adjustedScore >= SuccessScoreThreshold, brokeRecord, adjustedScore);
                 rewardApplied = true;
             }
 
@@ -281,7 +305,8 @@ namespace DesktopPet.MiniGame
                 return;
             }
 
-            statusText.text = $"\u5f97\u5206 {score}   \u751f\u547d {Mathf.Max(lives, 0)}   \u65f6\u95f4 {remainingTime:0.0}s";
+            int adjustedScore = ApplySessionScoreModifier(score, out _);
+            statusText.text = $"\u5f97\u5206 {adjustedScore}   \u751f\u547d {Mathf.Max(lives, 0)}   \u65f6\u95f4 {remainingTime:0.0}s";
             bestText.text = $"\u5386\u53f2\u6700\u4f73: {bestScore}";
         }
 

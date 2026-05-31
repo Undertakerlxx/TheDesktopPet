@@ -90,8 +90,17 @@ namespace DesktopPet.MiniGame
         private void ApplySessionRewards()
         {
             if (rewardApplied) return;
-            ApplyMiniGameResult(MiniGameKind.GeometryAtAGlance, completedRoundsThisSession >= 3, sessionBrokeRecord, completedRoundsThisSession);
+            int adjustedScore = ApplySessionScoreModifier(GetSessionScore(), out _);
+            string scoreBreakdown = FormatSessionModifierBreakdown(GetSessionScore(), adjustedScore);
+            string modifierSuffix = string.IsNullOrEmpty(SessionScoreModifierLabel) ? string.Empty : $" ({SessionScoreModifierLabel})";
+            resultText.text = $"{resultText.text} \u7ed3\u7b97\u5f97\u5206 {scoreBreakdown}{modifierSuffix}\u3002";
+            ApplyMiniGameResult(MiniGameKind.GeometryAtAGlance, adjustedScore >= 500, sessionBrokeRecord, adjustedScore);
             rewardApplied = true;
+        }
+
+        private int GetSessionScore()
+        {
+            return completedRoundsThisSession * ScorePerRound;
         }
 
     }

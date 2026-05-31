@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace DesktopPet.MiniGame
@@ -43,6 +44,7 @@ namespace DesktopPet.MiniGame
         {
             Image image = CreatePanel(name, parent, backgroundColor);
             Button button = image.gameObject.AddComponent<Button>();
+            button.navigation = new Navigation { mode = Navigation.Mode.None };
             ColorBlock colors = button.colors;
             colors.normalColor = backgroundColor;
             colors.highlightedColor = backgroundColor * 1.05f;
@@ -50,6 +52,7 @@ namespace DesktopPet.MiniGame
             colors.selectedColor = colors.highlightedColor;
             colors.disabledColor = new Color(backgroundColor.r, backgroundColor.g, backgroundColor.b, 0.55f);
             button.colors = colors;
+            button.onClick.AddListener(ClearSelection);
 
             Text labelText = CreateText("Label", image.transform, 24, TextAnchor.MiddleCenter, textColor);
             Stretch(labelText.rectTransform);
@@ -115,6 +118,14 @@ namespace DesktopPet.MiniGame
             }
 
             return cachedFont;
+        }
+
+        private static void ClearSelection()
+        {
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+            }
         }
     }
 }

@@ -89,6 +89,7 @@ namespace DesktopPet.MiniGame
             actionButton.onClick.AddListener(StartGame);
 
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         private void Update()
@@ -133,18 +134,32 @@ namespace DesktopPet.MiniGame
         protected override void RefreshView()
         {
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         public override void HandleWindowClosed()
         {
+            if (isPlaying)
+            {
+                FinishGame();
+            }
+
             isPlaying = false;
             moveInput = 0f;
             ClearBalls();
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         private void StartGame()
         {
+            if (!TryBeginMiniGameSession(resultText))
+            {
+                UpdateTexts();
+                RefreshMiniGameAvailability(resultText, actionButton);
+                return;
+            }
+
             ClearBalls();
             lives = 3;
             survivalTime = 0f;
@@ -253,22 +268,25 @@ namespace DesktopPet.MiniGame
         private void FinishGame()
         {
             isPlaying = false;
-            bool brokeRecord = survivalTime > bestSurvival;
-            if (survivalTime > bestSurvival)
+            float adjustedSurvival = ApplySessionPositiveTimeModifier(survivalTime, 1, out _);
+            bool brokeRecord = adjustedSurvival > bestSurvival;
+            string survivalBreakdown = FormatSessionModifierBreakdown(survivalTime, adjustedSurvival, 1);
+            string modifierSuffix = string.IsNullOrEmpty(SessionScoreModifierLabel) ? string.Empty : $" ({SessionScoreModifierLabel})";
+            if (adjustedSurvival > bestSurvival)
             {
-                bestSurvival = survivalTime;
+                bestSurvival = adjustedSurvival;
                 PlayerPrefs.SetFloat(BestSurvivalKey, bestSurvival);
                 PlayerPrefs.Save();
-                resultText.text = $"\u6311\u6218\u7ed3\u675f\uff0c\u575a\u6301\u4e86 {survivalTime:0.0}s\uff0c\u5237\u65b0\u6700\u4f73\u8bb0\u5f55\u3002";
+                resultText.text = $"\u6311\u6218\u7ed3\u675f\uff0c\u575a\u6301\u4e86 {survivalBreakdown}s{modifierSuffix}\uff0c\u5237\u65b0\u6700\u4f73\u8bb0\u5f55\u3002";
             }
             else
             {
-                resultText.text = $"\u6311\u6218\u7ed3\u675f\uff0c\u575a\u6301\u4e86 {survivalTime:0.0}s\u3002";
+                resultText.text = $"\u6311\u6218\u7ed3\u675f\uff0c\u575a\u6301\u4e86 {survivalBreakdown}s{modifierSuffix}\u3002";
             }
 
             if (!rewardApplied)
             {
-                ApplyMiniGameResult(MiniGameKind.DodgeBall, survivalTime >= SuccessSurvivalThreshold, brokeRecord, Mathf.RoundToInt(survivalTime));
+                ApplyMiniGameResult(MiniGameKind.DodgeBall, adjustedSurvival >= SuccessSurvivalThreshold, brokeRecord, Mathf.RoundToInt(adjustedSurvival * 10f));
                 rewardApplied = true;
             }
 
@@ -330,8 +348,9 @@ namespace DesktopPet.MiniGame
                 return;
             }
 
+            float adjustedSurvival = ApplySessionPositiveTimeModifier(survivalTime, 1, out _);
             statusText.text = isPlaying
-                ? $"\u751f\u5b58: {survivalTime:0.0}s   \u751f\u547d: {lives}"
+                ? $"\u751f\u5b58: {adjustedSurvival:0.0}s   \u751f\u547d: {lives}"
                 : "\u5de6\u53f3\u79fb\u52a8\u8e72\u907f\u6765\u7403";
             bestText.text = $"\u6700\u4f73\u751f\u5b58: {bestSurvival:0.0}s";
         }
