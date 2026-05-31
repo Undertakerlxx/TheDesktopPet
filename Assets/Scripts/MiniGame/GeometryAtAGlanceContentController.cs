@@ -7,10 +7,11 @@ namespace DesktopPet.MiniGame
 {
     public partial class GeometryAtAGlanceContentController : MiniGameWindowContentController
     {
-        private const string BestLevelKey = "MiniGame.GeometryAtAGlance.BestLevel";
-        private const float InitialMemorizeTime = 5.8f;
+        private const string BestScoreKey = "MiniGame.GeometryAtAGlance.BestScore";
+        private const float InitialMemorizeTime = 6.8f;
         private const float MinimumMemorizeTime = 1.8f;
-        private const float MemorizeTimeDecayPerLevel = 0.22f;
+        private const float MemorizeTimeDecayPerLevel = 0.26f;
+        private const int ScorePerRound = 100;
 
         private readonly List<Button> cellButtons = new();
         private readonly List<Text> cellLabels = new();
@@ -49,7 +50,7 @@ namespace DesktopPet.MiniGame
         private GeometryCellSpec[] shownPattern;
         private float phaseTimer;
         private int level = 1;
-        private int bestLevel;
+        private int bestScore;
         private int gridSize = 3;
         private GeometryPhase currentPhase = GeometryPhase.Idle;
         private int completedRoundsThisSession;
@@ -58,7 +59,7 @@ namespace DesktopPet.MiniGame
 
         protected override void BuildContent()
         {
-            bestLevel = PlayerPrefs.GetInt(BestLevelKey, 1);
+            bestScore = PlayerPrefs.GetInt(BestScoreKey, 0);
             rewardApplied = false;
 
             instructionText = MiniGameUiFactory.CreateText("InstructionText", ContentRoot, 18, TextAnchor.UpperLeft, new Color(0.24f, 0.24f, 0.24f));
@@ -106,6 +107,7 @@ namespace DesktopPet.MiniGame
             SetCellsInteractable(false);
             submitButton.interactable = false;
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         private void Update()
@@ -127,6 +129,18 @@ namespace DesktopPet.MiniGame
         protected override void RefreshView()
         {
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
+        }
+
+        public override void HandleWindowClosed()
+        {
+            if (currentPhase == GeometryPhase.Memorize || currentPhase == GeometryPhase.Answer)
+            {
+                currentPhase = GeometryPhase.ResultLose;
+                ApplySessionRewards();
+            }
+
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         protected override void ResetRuntimeState()
@@ -155,6 +169,13 @@ namespace DesktopPet.MiniGame
             {
                 case GeometryPhase.Idle:
                 case GeometryPhase.ResultLose:
+                    if (!TryBeginMiniGameSession(resultText))
+                    {
+                        UpdateTexts();
+                        RefreshMiniGameAvailability(resultText, actionButton);
+                        return;
+                    }
+
                     level = Mathf.Max(1, level);
                     completedRoundsThisSession = 0;
                     sessionBrokeRecord = false;
@@ -174,7 +195,7 @@ namespace DesktopPet.MiniGame
             selectedIndices.Clear();
             changedIndices.Clear();
 
-            gridSize = level >= 4 ? 4 : 3;
+            gridSize = level >= 6 ? 4 : 3;
             int totalCells = gridSize * gridSize;
             EnsureGridCellCount(totalCells);
             grid.constraintCount = gridSize;
@@ -189,7 +210,7 @@ namespace DesktopPet.MiniGame
                 shownPattern[index] = basePattern[index];
             }
 
-            int changeCount = Mathf.Clamp(1 + (level - 1) / 2, 1, Mathf.Max(2, totalCells / 3));
+            int changeCount = level <= 10 ? 1 : Mathf.Clamp(1 + (level - 9) / 2, 1, Mathf.Max(2, totalCells / 3));
             while (changedIndices.Count < changeCount)
             {
                 changedIndices.Add(Random.Range(0, totalCells));
@@ -234,11 +255,12 @@ namespace DesktopPet.MiniGame
             {
                 currentPhase = GeometryPhase.ResultWin;
                 completedRoundsThisSession++;
-                if (level > bestLevel)
+                int adjustedScore = ApplySessionScoreModifier(GetSessionScore(), out _);
+                if (adjustedScore > bestScore)
                 {
-                    bestLevel = level;
+                    bestScore = adjustedScore;
                     sessionBrokeRecord = true;
-                    PlayerPrefs.SetInt(BestLevelKey, bestLevel);
+                    PlayerPrefs.SetInt(BestScoreKey, bestScore);
                     PlayerPrefs.Save();
                 }
 
@@ -292,8 +314,9 @@ namespace DesktopPet.MiniGame
             };
 
             phaseText.text = phaseLabel;
-            statusText.text = $"\u5173\u5361 {level}   \u5bab\u683c {gridSize}x{gridSize}   \u5df2\u9009 {selectedIndices.Count}";
-            bestText.text = $"\u6700\u9ad8\u5173\u5361: {bestLevel}";
+            int adjustedScore = ApplySessionScoreModifier(GetSessionScore(), out _);
+            statusText.text = $"\u5f97\u5206 {adjustedScore}   \u5bab\u683c {gridSize}x{gridSize}   \u5df2\u9009 {selectedIndices.Count}";
+            bestText.text = $"\u5386\u53f2\u6700\u4f73: {bestScore}";
 
             submitButton.gameObject.SetActive(currentPhase == GeometryPhase.Answer);
             actionButton.GetComponentInChildren<Text>().text = currentPhase switch

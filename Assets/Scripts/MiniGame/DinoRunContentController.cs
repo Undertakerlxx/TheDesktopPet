@@ -92,6 +92,7 @@ namespace DesktopPet.MiniGame
             actionButton.onClick.AddListener(StartGame);
 
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         private void Update()
@@ -139,17 +140,31 @@ namespace DesktopPet.MiniGame
         protected override void RefreshView()
         {
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         public override void HandleWindowClosed()
         {
+            if (isPlaying)
+            {
+                FinishGame();
+            }
+
             isPlaying = false;
             ClearObstacles();
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         private void StartGame()
         {
+            if (!TryBeginMiniGameSession(resultText))
+            {
+                UpdateTexts();
+                RefreshMiniGameAvailability(resultText, actionButton);
+                return;
+            }
+
             ClearObstacles();
             isPlaying = true;
             rewardApplied = false;
@@ -222,7 +237,7 @@ namespace DesktopPet.MiniGame
             playfieldWidth = playfield.rect.width;
             bool isTallTree = Random.value > 0.45f;
             Vector2 hitboxSize = isTallTree
-                ? new Vector2(Random.Range(11f, 14f), Random.Range(26f, 34f))
+                ? new Vector2(Random.Range(11f, 14f), Random.Range(22f, 30f))
                 : new Vector2(Random.Range(16f, 20f), Random.Range(18f, 24f));
 
             RectTransform obstacleRect = MiniGameUiFactory.CreateRect("Obstacle", playfield);
@@ -253,22 +268,26 @@ namespace DesktopPet.MiniGame
         private void FinishGame()
         {
             isPlaying = false;
-            bool brokeRecord = distance > bestDistance;
-            if (distance > bestDistance)
+            int rawDistance = Mathf.RoundToInt(distance);
+            int adjustedDistance = ApplySessionScoreModifier(rawDistance, out _);
+            bool brokeRecord = adjustedDistance > bestDistance;
+            string distanceBreakdown = FormatSessionModifierBreakdown(rawDistance, adjustedDistance);
+            string modifierSuffix = string.IsNullOrEmpty(SessionScoreModifierLabel) ? string.Empty : $" ({SessionScoreModifierLabel})";
+            if (adjustedDistance > bestDistance)
             {
-                bestDistance = distance;
+                bestDistance = adjustedDistance;
                 PlayerPrefs.SetFloat(BestDistanceKey, bestDistance);
                 PlayerPrefs.Save();
-                resultText.text = $"\u649e\u4e0a\u969c\u788d\uff0c\u91cc\u7a0b {distance:0}\uff0c\u5237\u65b0\u4e86\u6700\u4f73\u8bb0\u5f55\u3002";
+                resultText.text = $"\u649e\u4e0a\u969c\u788d\uff0c\u91cc\u7a0b {distanceBreakdown}{modifierSuffix}\uff0c\u5237\u65b0\u4e86\u6700\u4f73\u8bb0\u5f55\u3002";
             }
             else
             {
-                resultText.text = $"\u649e\u4e0a\u969c\u788d\uff0c\u91cc\u7a0b {distance:0}\u3002";
+                resultText.text = $"\u649e\u4e0a\u969c\u788d\uff0c\u91cc\u7a0b {distanceBreakdown}{modifierSuffix}\u3002";
             }
 
             if (!rewardApplied)
             {
-                ApplyMiniGameResult(MiniGameKind.DinoRun, distance >= SuccessDistanceThreshold, brokeRecord, Mathf.RoundToInt(distance));
+                ApplyMiniGameResult(MiniGameKind.DinoRun, adjustedDistance >= SuccessDistanceThreshold, brokeRecord, adjustedDistance);
                 rewardApplied = true;
             }
 
@@ -345,8 +364,9 @@ namespace DesktopPet.MiniGame
                 return;
             }
 
+            int adjustedDistance = ApplySessionScoreModifier(Mathf.RoundToInt(distance), out _);
             statusText.text = isPlaying
-                ? $"\u91cc\u7a0b: {distance:0}   \u901f\u5ea6: {obstacleSpeed:0}"
+                ? $"\u91cc\u7a0b: {adjustedDistance}   \u901f\u5ea6: {obstacleSpeed:0}"
                 : "\u7ecf\u5178\u8df3\u8dc3\u8e72\u969c\u788d\u73a9\u6cd5";
             bestText.text = $"\u6700\u4f73\u91cc\u7a0b: {bestDistance:0}";
         }

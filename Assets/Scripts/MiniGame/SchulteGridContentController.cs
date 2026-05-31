@@ -84,6 +84,7 @@ namespace DesktopPet.MiniGame
 
             SetGridInteractable(false);
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         private void Update()
@@ -113,16 +114,33 @@ namespace DesktopPet.MiniGame
         protected override void RefreshView()
         {
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         public override void HandleWindowClosed()
         {
+            if (isPlaying && !rewardApplied)
+            {
+                isPlaying = false;
+                resultText.text = "\u672c\u5c40\u63d0\u524d\u7ed3\u675f\uff0c\u672c\u6b21\u6309\u5931\u8d25\u7ed3\u7b97\u3002";
+                ApplyMiniGameResult(MiniGameKind.SchulteGrid, false, false, 0, -1f);
+                rewardApplied = true;
+            }
+
             isPlaying = false;
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         private void StartGame()
         {
+            if (!TryBeginMiniGameSession(resultText))
+            {
+                UpdateTexts();
+                RefreshMiniGameAvailability(resultText, actionButton);
+                return;
+            }
+
             isPlaying = true;
             rewardApplied = false;
             elapsedTime = 0f;
@@ -185,22 +203,25 @@ namespace DesktopPet.MiniGame
         private void FinishGame()
         {
             isPlaying = false;
-            bool brokeRecord = bestTime <= 0f || elapsedTime < bestTime;
-            if (bestTime <= 0f || elapsedTime < bestTime)
+            float adjustedTime = ApplySessionInverseTimeModifier(elapsedTime, 2, out _);
+            bool brokeRecord = bestTime <= 0f || adjustedTime < bestTime;
+            string timeBreakdown = FormatSessionModifierBreakdown(elapsedTime, adjustedTime, 2);
+            string modifierSuffix = string.IsNullOrEmpty(SessionScoreModifierLabel) ? string.Empty : $" ({SessionScoreModifierLabel})";
+            if (bestTime <= 0f || adjustedTime < bestTime)
             {
-                bestTime = elapsedTime;
+                bestTime = adjustedTime;
                 PlayerPrefs.SetFloat(BestTimeKey, bestTime);
                 PlayerPrefs.Save();
-                resultText.text = $"\u5b8c\u6210\uff0c\u7528\u65f6 {elapsedTime:0.00}s\uff0c\u5237\u65b0\u6700\u4f73\u6210\u7ee9\u3002";
+                resultText.text = $"\u5b8c\u6210\uff0c\u7528\u65f6 {timeBreakdown}s{modifierSuffix}\uff0c\u5237\u65b0\u6700\u4f73\u6210\u7ee9\u3002";
             }
             else
             {
-                resultText.text = $"\u5b8c\u6210\uff0c\u7528\u65f6 {elapsedTime:0.00}s\u3002";
+                resultText.text = $"\u5b8c\u6210\uff0c\u7528\u65f6 {timeBreakdown}s{modifierSuffix}\u3002";
             }
 
             if (!rewardApplied)
             {
-                ApplyMiniGameResult(MiniGameKind.SchulteGrid, true, brokeRecord, 25, elapsedTime);
+                ApplyMiniGameResult(MiniGameKind.SchulteGrid, true, brokeRecord, 25, adjustedTime);
                 rewardApplied = true;
             }
 

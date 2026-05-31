@@ -7,8 +7,9 @@ namespace DesktopPet.MiniGame
 {
     public class ColorGridContentController : MiniGameWindowContentController
     {
-        private const string BestLevelKey = "MiniGame.ColorGrid.BestLevel";
-        private const int SuccessScoreThreshold = 10;
+        private const string BestScoreKey = "MiniGame.ColorGrid.BestScore";
+        private const int ScorePerRound = 100;
+        private const int SuccessScoreThreshold = 1000;
 
         private Text instructionText;
         private Text statusText;
@@ -22,7 +23,7 @@ namespace DesktopPet.MiniGame
         private readonly List<Image> cellImages = new();
 
         private int level = 1;
-        private int bestLevel = 1;
+        private int bestScore;
         private int targetIndex = -1;
         private int gridSize = 3;
         private float roundTime;
@@ -39,7 +40,7 @@ namespace DesktopPet.MiniGame
 
         protected override void BuildContent()
         {
-            bestLevel = PlayerPrefs.GetInt(BestLevelKey, 1);
+            bestScore = PlayerPrefs.GetInt(BestScoreKey, 0);
             rewardApplied = false;
 
             instructionText = MiniGameUiFactory.CreateText("InstructionText", ContentRoot, 18, TextAnchor.UpperLeft, new Color(0.24f, 0.24f, 0.24f));
@@ -81,6 +82,7 @@ namespace DesktopPet.MiniGame
 
             ShowIdleState();
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         private void Update()
@@ -118,20 +120,35 @@ namespace DesktopPet.MiniGame
         protected override void RefreshView()
         {
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         public override void HandleWindowClosed()
         {
-            isPlaying = false;
+            if (isPlaying)
+            {
+                isPlaying = false;
+                resultText.text = "\u672c\u5c40\u63d0\u524d\u7ed3\u675f\u3002";
+                ApplySessionRewards();
+            }
+
             ShowIdleState();
             UpdateTexts();
+            RefreshMiniGameAvailability(resultText, actionButton);
         }
 
         private void StartGame()
         {
             if (!isPlaying)
             {
-                level = Mathf.Max(1, level);
+                if (!TryBeginMiniGameSession(resultText))
+                {
+                    UpdateTexts();
+                    RefreshMiniGameAvailability(resultText, actionButton);
+                    return;
+                }
+
+                level = 1;
                 sessionScore = 0;
                 sessionBrokeRecord = false;
                 rewardApplied = false;
@@ -182,12 +199,13 @@ namespace DesktopPet.MiniGame
             if (index == targetIndex)
             {
                 level++;
-                sessionScore++;
-                if (level > bestLevel)
+                sessionScore += ScorePerRound;
+                int adjustedScore = ApplySessionScoreModifier(sessionScore, out _);
+                if (adjustedScore > bestScore)
                 {
-                    bestLevel = level;
+                    bestScore = adjustedScore;
                     sessionBrokeRecord = true;
-                    PlayerPrefs.SetInt(BestLevelKey, bestLevel);
+                    PlayerPrefs.SetInt(BestScoreKey, bestScore);
                     PlayerPrefs.Save();
                 }
 
@@ -255,10 +273,11 @@ namespace DesktopPet.MiniGame
                 return;
             }
 
+            int adjustedScore = ApplySessionScoreModifier(sessionScore, out _);
             statusText.text = isPlaying
-                ? $"\u5173\u5361: {level}   \u5bab\u683c: {gridSize}x{gridSize}   \u5269\u4f59: {roundTime:0.0}s"
-                : $"\u5173\u5361: {level}   \u70b9\u51fb\u5f00\u59cb\u8fdb\u5165\u6311\u6218";
-            bestText.text = $"\u6700\u9ad8\u5173\u5361: {bestLevel}";
+                ? $"\u5f97\u5206: {adjustedScore}   \u5bab\u683c: {gridSize}x{gridSize}   \u5269\u4f59: {roundTime:0.0}s"
+                : $"\u5f97\u5206: {adjustedScore}   \u70b9\u51fb\u5f00\u59cb\u8fdb\u5165\u6311\u6218";
+            bestText.text = $"\u5386\u53f2\u6700\u4f73: {bestScore}";
         }
 
         private void ApplySessionRewards()
@@ -268,7 +287,11 @@ namespace DesktopPet.MiniGame
                 return;
             }
 
-            ApplyMiniGameResult(MiniGameKind.ColorGrid, sessionScore >= SuccessScoreThreshold, sessionBrokeRecord, sessionScore);
+            int adjustedScore = ApplySessionScoreModifier(sessionScore, out _);
+            string scoreBreakdown = FormatSessionModifierBreakdown(sessionScore, adjustedScore);
+            string modifierSuffix = string.IsNullOrEmpty(SessionScoreModifierLabel) ? string.Empty : $" ({SessionScoreModifierLabel})";
+            resultText.text = $"{resultText.text} \u7ed3\u7b97\u5f97\u5206 {scoreBreakdown}{modifierSuffix}\u3002";
+            ApplyMiniGameResult(MiniGameKind.ColorGrid, adjustedScore >= SuccessScoreThreshold, sessionBrokeRecord, adjustedScore);
             rewardApplied = true;
         }
     }

@@ -8,14 +8,15 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
 {
     private const string DefaultStatsAssetName = "DefaultThePetStats";
     private const float MaxStatValue = 100f;
+    private const float MaxFocusValue = 500f;
 
     [System.Serializable]
     private class InspectorDebugStats
     {
         public float intimacy = 30f;
         public float happiness = 66f;
-        public float energy = 65f;
-        public float energy_max = 100f;
+        public float energy = 200f;
+        public float energy_max = 200f;
         public float focus = 100f;
         public float satiety = 60f;
 
@@ -133,10 +134,93 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
         float focusGain = GetMiniGameFocusGain(gameKind, score, completionSeconds);
         if (focusGain > 0f)
         {
-            current_stats.focus = Mathf.Clamp(current_stats.focus + focusGain, 0f, MaxStatValue);
+            current_stats.focus = Mathf.Clamp(current_stats.focus + focusGain, 0f, MaxFocusValue);
         }
 
         NotifyStatsChanged();
+    }
+
+    public bool CanStartMiniGame(out string reason)
+    {
+        reason = string.Empty;
+        if (current_stats == null)
+        {
+            return true;
+        }
+
+        if (current_stats.satiety < 30f)
+        {
+            reason = "\u9965\u997f\u503c\u4f4e\u4e8e30\uff0c\u65e0\u6cd5\u8fdb\u884c\u5c0f\u6e38\u620f\u3002";
+            return false;
+        }
+
+        if (current_stats.satiety >= 50f && current_stats.energy <= 50f)
+        {
+            reason = "\u6d3b\u529b\u503c\u8fc7\u4f4e\uff0c\u65e0\u6cd5\u8fdb\u884c\u5c0f\u6e38\u620f\u3002";
+            return false;
+        }
+
+        return true;
+    }
+
+    public int GetMiniGameScoreModifierPercent()
+    {
+        if (current_stats == null)
+        {
+            return 0;
+        }
+
+        if (current_stats.satiety < 50f)
+        {
+            return current_stats.satiety >= 30f ? -10 : 0;
+        }
+
+        if (current_stats.energy >= 160f)
+        {
+            return 10;
+        }
+
+        if (current_stats.energy >= 100f)
+        {
+            return 0;
+        }
+
+        if (current_stats.energy >= 50f)
+        {
+            return -10;
+        }
+
+        return 0;
+    }
+
+    public string GetMiniGameScoreModifierLabel()
+    {
+        if (current_stats == null)
+        {
+            return string.Empty;
+        }
+
+        if (current_stats.satiety < 50f)
+        {
+            return current_stats.satiety >= 30f ? "\u9965\u997f\u72b6\u6001\u60e9\u7f5a" : string.Empty;
+        }
+
+        if (current_stats.energy >= 160f)
+        {
+            return "\u9ad8\u6d3b\u529b\u52a0\u6210";
+        }
+
+        if (current_stats.energy >= 100f)
+        {
+            return string.Empty;
+        }
+
+        if (current_stats.energy >= 50f)
+        {
+            return "\u4f4e\u6d3b\u529b\u60e9\u7f5a";
+        }
+
+        return string.Empty;
     }
 
     public bool SaveCurrentStats()
@@ -245,6 +329,12 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
         else
         {
             runtimeStats.name = $"{DefaultStatsAssetName}_Runtime";
+        }
+
+        if (runtimeStats.energy_max <= 100f && runtimeStats.energy <= 100f)
+        {
+            runtimeStats.energy_max = 200f;
+            runtimeStats.energy = 200f;
         }
 
         ApplyInspectorDebugStatsIfNeeded(runtimeStats);
@@ -427,17 +517,17 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
 
     private static float GetScoreTierFocusGain(int score)
     {
-        if (score >= 10)
+        if (score >= 1000)
         {
             return 4f;
         }
 
-        if (score >= 5)
+        if (score >= 500)
         {
             return 3f;
         }
 
-        if (score >= 1)
+        if (score >= 100)
         {
             return 2f;
         }
@@ -461,7 +551,7 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
         stats.energy_max = Mathf.Max(0f, stats.energy_max);
         stats.happiness = Mathf.Clamp(stats.happiness, 0f, MaxStatValue);
         stats.energy = Mathf.Clamp(stats.energy, 0f, stats.energy_max);
-        stats.focus = Mathf.Clamp(stats.focus, 0f, MaxStatValue);
+        stats.focus = Mathf.Clamp(stats.focus, 0f, MaxFocusValue);
         stats.satiety = Mathf.Clamp(stats.satiety, 0f, MaxStatValue);
     }
 
