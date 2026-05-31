@@ -52,6 +52,7 @@ namespace DesktopPet.MiniGame
         }
 
         protected abstract void BuildContent();
+        protected abstract MiniGameKind ControlledGameKind { get; }
 
         protected virtual void RefreshView()
         {
@@ -146,7 +147,7 @@ namespace DesktopPet.MiniGame
         protected bool TryBeginMiniGameSession(Text resultText = null)
         {
             cachedStatsManager ??= FindFirstObjectByType<ThePetStatsManager>();
-            if (cachedStatsManager != null && !cachedStatsManager.CanStartMiniGame(out string reason))
+            if (cachedStatsManager != null && !cachedStatsManager.CanStartMiniGame(ControlledGameKind, out string reason))
             {
                 SessionScoreModifierPercent = 0;
                 SessionScoreModifierLabel = string.Empty;
@@ -167,7 +168,7 @@ namespace DesktopPet.MiniGame
         {
             cachedStatsManager ??= FindFirstObjectByType<ThePetStatsManager>();
             string reason = string.Empty;
-            bool canPlay = cachedStatsManager == null || cachedStatsManager.CanStartMiniGame(out reason);
+            bool canPlay = cachedStatsManager == null || cachedStatsManager.CanStartMiniGame(ControlledGameKind, out reason);
             if (actionButton != null)
             {
                 actionButton.interactable = canPlay;
@@ -262,7 +263,8 @@ namespace DesktopPet.MiniGame
         private static bool IsAvailabilityMessage(string message)
         {
             return message == "\u9965\u997f\u503c\u4f4e\u4e8e30\uff0c\u65e0\u6cd5\u8fdb\u884c\u5c0f\u6e38\u620f\u3002" ||
-                   message == "\u6d3b\u529b\u503c\u8fc7\u4f4e\uff0c\u65e0\u6cd5\u8fdb\u884c\u5c0f\u6e38\u620f\u3002";
+                   message == "\u6d3b\u529b\u503c\u8fc7\u4f4e\uff0c\u65e0\u6cd5\u8fdb\u884c\u5c0f\u6e38\u620f\u3002" ||
+                   (!string.IsNullOrEmpty(message) && message.StartsWith("亲密度达到 "));
         }
 
         private static AchievementEventType GetSuccessEventType(MiniGameKind gameKind)

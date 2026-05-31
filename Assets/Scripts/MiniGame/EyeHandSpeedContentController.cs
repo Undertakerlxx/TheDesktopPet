@@ -11,6 +11,7 @@ namespace DesktopPet.MiniGame
         private const float TotalRoundTime = 30f;
         private const int ScorePerHit = 100;
         private const int SuccessScoreThreshold = 1000;
+        protected override MiniGameKind ControlledGameKind => MiniGameKind.EyeHandSpeed;
 
         private readonly List<Button> cellButtons = new();
         private readonly List<Text> cellLabels = new();

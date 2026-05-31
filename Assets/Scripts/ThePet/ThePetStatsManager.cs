@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using DesktopPet.MiniGame;
 using DesktopPet.Save;
@@ -9,6 +9,8 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
     private const string DefaultStatsAssetName = "DefaultThePetStats";
     private const float MaxStatValue = 100f;
     private const float MaxFocusValue = 500f;
+    private const int MiniGameSuccessIntimacyReward = 2;
+    private const int MiniGameDailyIntimacyCap = 100;
 
     [System.Serializable]
     private class InspectorDebugStats
@@ -137,7 +139,24 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
             current_stats.focus = Mathf.Clamp(current_stats.focus + focusGain, 0f, MaxFocusValue);
         }
 
+        if (success)
+        {
+            ApplyMiniGameIntimacyReward();
+        }
+
         NotifyStatsChanged();
+    }
+
+    public bool CanStartMiniGame(MiniGameKind gameKind, out string reason)
+    {
+        reason = string.Empty;
+        if (!IsMiniGameUnlocked(gameKind, out int requiredIntimacy))
+        {
+            reason = $"亲密度达到 {requiredIntimacy} 后解锁该小游戏。";
+            return false;
+        }
+
+        return CanStartMiniGame(out reason);
     }
 
     public bool CanStartMiniGame(out string reason)
@@ -161,6 +180,28 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
         }
 
         return true;
+    }
+
+    public bool IsMiniGameUnlocked(MiniGameKind gameKind)
+    {
+        return IsMiniGameUnlocked(gameKind, out _);
+    }
+
+    public bool IsMiniGameUnlocked(MiniGameKind gameKind, out int requiredIntimacy)
+    {
+        requiredIntimacy = GetMiniGameUnlockRequirement(gameKind);
+        return current_stats == null || current_stats.intimacy >= requiredIntimacy;
+    }
+
+    public static int GetMiniGameUnlockRequirement(MiniGameKind gameKind)
+    {
+        return gameKind switch
+        {
+            MiniGameKind.GeometryAtAGlance => 200,
+            MiniGameKind.DinoRun => 500,
+            MiniGameKind.DodgeBall => 1000,
+            _ => 0
+        };
     }
 
     public int GetMiniGameScoreModifierPercent()
@@ -260,7 +301,7 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
 
         current_stats.satiety = Mathf.Clamp(current_stats.satiety + satietyRestore, 0f, MaxStatValue);
         current_stats.happiness = Mathf.Clamp(current_stats.happiness + happinessRestore, 0f, MaxStatValue);
-        current_stats.intimacy = Mathf.Clamp(current_stats.intimacy + intimacyRestore, 0f, MaxStatValue);
+        current_stats.intimacy = Mathf.Max(0f, current_stats.intimacy + intimacyRestore);
 
         NotifyStatsChanged();
         SaveCurrentStats();
@@ -293,6 +334,7 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
             saveData?.ApplyTo(current_stats);
         }
 
+        EnsureMiniGameIntimacyProgressCurrent();
         ClampRuntimeStats(current_stats);
     }
 
@@ -324,6 +366,8 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
             runtimeStats.energy_max = sourceStats.energy_max;
             runtimeStats.focus = sourceStats.focus;
             runtimeStats.satiety = sourceStats.satiety;
+            runtimeStats.miniGameDailyIntimacyGain = sourceStats.miniGameDailyIntimacyGain;
+            runtimeStats.miniGameDailyIntimacyDate = sourceStats.miniGameDailyIntimacyDate;
             runtimeStats.name = $"{sourceStats.name}_Runtime";
         }
         else
@@ -467,6 +511,38 @@ public class ThePetStatsManager : EntityStatsManager<ThePetStats>
     {
         hasUnsavedChanges = false;
         autoSaveElapsedSeconds = 0f;
+    }
+
+    private void ApplyMiniGameIntimacyReward()
+    {
+        EnsureMiniGameIntimacyProgressCurrent();
+
+        int remainingReward = MiniGameDailyIntimacyCap - current_stats.miniGameDailyIntimacyGain;
+        if (remainingReward <= 0)
+        {
+            return;
+        }
+
+        int reward = Mathf.Min(MiniGameSuccessIntimacyReward, remainingReward);
+        current_stats.intimacy += reward;
+        current_stats.miniGameDailyIntimacyGain += reward;
+    }
+
+    private void EnsureMiniGameIntimacyProgressCurrent()
+    {
+        if (current_stats == null)
+        {
+            return;
+        }
+
+        string today = System.DateTime.Now.ToString("yyyy-MM-dd");
+        if (current_stats.miniGameDailyIntimacyDate == today)
+        {
+            return;
+        }
+
+        current_stats.miniGameDailyIntimacyDate = today;
+        current_stats.miniGameDailyIntimacyGain = 0;
     }
 
     private static float GetMiniGameEnergyCost(MiniGameKind gameKind)

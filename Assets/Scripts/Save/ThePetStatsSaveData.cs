@@ -11,6 +11,8 @@ namespace DesktopPet.Save
         public float energy_max;
         public float focus;
         public float satiety;
+        public int miniGameDailyIntimacyGain;
+        public string miniGameDailyIntimacyDate;
 
         public static ThePetStatsSaveData FromStats(ThePetStats stats)
         {
@@ -27,6 +29,8 @@ namespace DesktopPet.Save
                 energy_max = stats.energy_max,
                 focus = stats.focus,
                 satiety = stats.satiety,
+                miniGameDailyIntimacyGain = stats.miniGameDailyIntimacyGain,
+                miniGameDailyIntimacyDate = stats.miniGameDailyIntimacyDate,
             };
         }
 
@@ -43,6 +47,8 @@ namespace DesktopPet.Save
             stats.energy_max = energy_max;
             stats.focus = focus;
             stats.satiety = satiety;
+            stats.miniGameDailyIntimacyGain = miniGameDailyIntimacyGain;
+            stats.miniGameDailyIntimacyDate = miniGameDailyIntimacyDate;
         }
     }
 }

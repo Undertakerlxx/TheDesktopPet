@@ -12,6 +12,7 @@ namespace DesktopPet.MiniGame
         private const float MinimumMemorizeTime = 1.8f;
         private const float MemorizeTimeDecayPerLevel = 0.26f;
         private const int ScorePerRound = 100;
+        protected override MiniGameKind ControlledGameKind => MiniGameKind.GeometryAtAGlance;
 
         private readonly List<Button> cellButtons = new();
         private readonly List<Text> cellLabels = new();

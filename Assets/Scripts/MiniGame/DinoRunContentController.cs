@@ -12,6 +12,7 @@ namespace DesktopPet.MiniGame
         private const float SuccessDistanceThreshold = 1000f;
         private const float DinoWidth = 46f;
         private const float DinoHeight = 34f;
+        protected override MiniGameKind ControlledGameKind => MiniGameKind.DinoRun;
 
         private readonly List<ObstacleView> obstacles = new();
 
