@@ -10,6 +10,8 @@ namespace DesktopPet.MiniGame
     {
         private const string BestDistanceKey = "MiniGame.DinoRun.BestDistance";
         private const float SuccessDistanceThreshold = 1000f;
+        private const float DinoWidth = 46f;
+        private const float DinoHeight = 34f;
 
         private readonly List<ObstacleView> obstacles = new();
 
@@ -28,8 +30,8 @@ namespace DesktopPet.MiniGame
         private float playfieldWidth;
         private float groundY = 8f;
         private float velocityY;
-        private float jumpForce = 260f;
-        private float gravity = 680f;
+        private float jumpForce = 300f;
+        private float gravity = 900f;
         private float obstacleSpeed;
         private float spawnTimer;
         private float distance;
@@ -67,7 +69,7 @@ namespace DesktopPet.MiniGame
             MiniGameUiFactory.SetAnchors(ground.rectTransform, new Vector2(0f, 0f), new Vector2(1f, 0f), Vector2.zero, new Vector2(0f, 6f));
 
             dinoRect = MiniGameUiFactory.CreateRect("Dino", playfield);
-            MiniGameUiFactory.SetAnchors(dinoRect, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, groundY), new Vector2(92f, groundY + 40f));
+            MiniGameUiFactory.SetAnchors(dinoRect, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, groundY), new Vector2(24f + DinoWidth, groundY + DinoHeight));
             BuildRunnerModel();
 
             resultText = MiniGameUiFactory.CreateText("ResultText", ContentRoot, 17, TextAnchor.MiddleCenter, new Color(0.3f, 0.3f, 0.3f));
@@ -106,7 +108,7 @@ namespace DesktopPet.MiniGame
 
             float dt = Time.deltaTime;
             distance += obstacleSpeed * dt * 0.1f;
-            obstacleSpeed += dt * 10f;
+            obstacleSpeed += dt * 8f;
             spawnTimer -= dt;
 
             if (spawnTimer <= 0f)
@@ -151,8 +153,8 @@ namespace DesktopPet.MiniGame
             ClearObstacles();
             isPlaying = true;
             rewardApplied = false;
-            obstacleSpeed = 175f;
-            spawnTimer = 1.0f;
+            obstacleSpeed = 165f;
+            spawnTimer = 1.15f;
             distance = 0f;
             velocityY = 0f;
             isGrounded = true;
@@ -218,19 +220,21 @@ namespace DesktopPet.MiniGame
         private void SpawnObstacle()
         {
             playfieldWidth = playfield.rect.width;
+            bool isTallTree = Random.value > 0.45f;
+            Vector2 hitboxSize = isTallTree
+                ? new Vector2(Random.Range(11f, 14f), Random.Range(26f, 34f))
+                : new Vector2(Random.Range(16f, 20f), Random.Range(18f, 24f));
 
             RectTransform obstacleRect = MiniGameUiFactory.CreateRect("Obstacle", playfield);
-            obstacleRect.sizeDelta = new Vector2(Random.Range(18f, 26f), Random.Range(26f, 38f));
+            obstacleRect.sizeDelta = hitboxSize;
             obstacleRect.anchorMin = new Vector2(0f, 0f);
             obstacleRect.anchorMax = new Vector2(0f, 0f);
             obstacleRect.pivot = new Vector2(0.5f, 0f);
             obstacleRect.anchoredPosition = new Vector2(playfieldWidth - 8f, 6f);
-
-            Image image = obstacleRect.gameObject.AddComponent<Image>();
-            image.color = new Color(0.8f, 0.44f, 0.34f, 0.96f);
+            BuildObstacle(obstacleRect, isTallTree);
 
             obstacles.Add(new ObstacleView(obstacleRect));
-            spawnTimer = Random.Range(0.72f, 1.08f);
+            spawnTimer = Random.Range(0.82f, 1.18f);
         }
 
         private bool IsColliding(RectTransform obstacle)
@@ -255,7 +259,7 @@ namespace DesktopPet.MiniGame
                 bestDistance = distance;
                 PlayerPrefs.SetFloat(BestDistanceKey, bestDistance);
                 PlayerPrefs.Save();
-                resultText.text = $"\u649e\u4e0a\u969c\u788d\uff0c\u91cc\u7a0b {distance:0}\uff0c\u5237\u65b0\u6700\u4f73\u8bb0\u5f55\u3002";
+                resultText.text = $"\u649e\u4e0a\u969c\u788d\uff0c\u91cc\u7a0b {distance:0}\uff0c\u5237\u65b0\u4e86\u6700\u4f73\u8bb0\u5f55\u3002";
             }
             else
             {
@@ -287,38 +291,51 @@ namespace DesktopPet.MiniGame
         private void SetDinoHeight(float y)
         {
             dinoRect.offsetMin = new Vector2(24f, y);
-            dinoRect.offsetMax = new Vector2(92f, y + 40f);
+            dinoRect.offsetMax = new Vector2(24f + DinoWidth, y + DinoHeight);
         }
 
         private void BuildRunnerModel()
         {
             dinoBodyImage = MiniGameUiFactory.CreatePanel("Body", dinoRect, new Color(0.76f, 0.80f, 0.86f, 0.98f));
-            MiniGameUiFactory.SetAnchors(dinoBodyImage.rectTransform, new Vector2(0.16f, 0.18f), new Vector2(0.70f, 0.72f), Vector2.zero, Vector2.zero);
+            MiniGameUiFactory.SetAnchors(dinoBodyImage.rectTransform, new Vector2(0.22f, 0.20f), new Vector2(0.62f, 0.68f), Vector2.zero, Vector2.zero);
 
             Image head = MiniGameUiFactory.CreatePanel("Head", dinoRect, new Color(0.84f, 0.87f, 0.92f, 0.98f));
-            MiniGameUiFactory.SetAnchors(head.rectTransform, new Vector2(0.60f, 0.34f), new Vector2(0.92f, 0.82f), Vector2.zero, Vector2.zero);
+            MiniGameUiFactory.SetAnchors(head.rectTransform, new Vector2(0.54f, 0.34f), new Vector2(0.80f, 0.78f), Vector2.zero, Vector2.zero);
 
             Image earA = MiniGameUiFactory.CreatePanel("EarA", dinoRect, new Color(0.68f, 0.72f, 0.78f, 0.98f));
-            MiniGameUiFactory.SetAnchors(earA.rectTransform, new Vector2(0.68f, 0.74f), new Vector2(0.78f, 0.94f), Vector2.zero, Vector2.zero);
+            MiniGameUiFactory.SetAnchors(earA.rectTransform, new Vector2(0.66f, 0.70f), new Vector2(0.75f, 0.90f), Vector2.zero, Vector2.zero);
 
             Image earB = MiniGameUiFactory.CreatePanel("EarB", dinoRect, new Color(0.68f, 0.72f, 0.78f, 0.98f));
-            MiniGameUiFactory.SetAnchors(earB.rectTransform, new Vector2(0.80f, 0.74f), new Vector2(0.90f, 0.94f), Vector2.zero, Vector2.zero);
+            MiniGameUiFactory.SetAnchors(earB.rectTransform, new Vector2(0.77f, 0.70f), new Vector2(0.86f, 0.90f), Vector2.zero, Vector2.zero);
 
             Image tail = MiniGameUiFactory.CreatePanel("Tail", dinoRect, new Color(0.70f, 0.74f, 0.80f, 0.98f));
-            MiniGameUiFactory.SetAnchors(tail.rectTransform, new Vector2(0.02f, 0.36f), new Vector2(0.18f, 0.56f), Vector2.zero, Vector2.zero);
+            MiniGameUiFactory.SetAnchors(tail.rectTransform, new Vector2(0.08f, 0.34f), new Vector2(0.18f, 0.50f), Vector2.zero, Vector2.zero);
 
-            CreateLeg(new Vector2(0.22f, 0.00f), new Vector2(0.30f, 0.28f));
-            CreateLeg(new Vector2(0.38f, 0.00f), new Vector2(0.46f, 0.28f));
-            CreateLeg(new Vector2(0.58f, 0.00f), new Vector2(0.66f, 0.28f));
+            CreateLeg(new Vector2(0.24f, 0.00f), new Vector2(0.31f, 0.24f));
+            CreateLeg(new Vector2(0.40f, 0.00f), new Vector2(0.47f, 0.24f));
+            CreateLeg(new Vector2(0.56f, 0.00f), new Vector2(0.63f, 0.24f));
 
             Image eye = MiniGameUiFactory.CreatePanel("Eye", dinoRect, new Color(0.16f, 0.16f, 0.16f, 0.98f));
-            MiniGameUiFactory.SetAnchors(eye.rectTransform, new Vector2(0.77f, 0.56f), new Vector2(0.81f, 0.62f), Vector2.zero, Vector2.zero);
+            MiniGameUiFactory.SetAnchors(eye.rectTransform, new Vector2(0.68f, 0.54f), new Vector2(0.73f, 0.60f), Vector2.zero, Vector2.zero);
         }
 
         private void CreateLeg(Vector2 anchorMin, Vector2 anchorMax)
         {
             Image leg = MiniGameUiFactory.CreatePanel("Leg", dinoRect, new Color(0.50f, 0.54f, 0.60f, 0.98f));
             MiniGameUiFactory.SetAnchors(leg.rectTransform, anchorMin, anchorMax, Vector2.zero, Vector2.zero);
+        }
+
+        private void BuildObstacle(RectTransform obstacleRect, bool isTallTree)
+        {
+            Image trunk = MiniGameUiFactory.CreatePanel("Trunk", obstacleRect, new Color(0.47f, 0.31f, 0.19f, 0.98f));
+            if (isTallTree)
+            {
+                MiniGameUiFactory.SetAnchors(trunk.rectTransform, new Vector2(0.22f, 0f), new Vector2(0.78f, 1f), Vector2.zero, Vector2.zero);
+            }
+            else
+            {
+                MiniGameUiFactory.SetAnchors(trunk.rectTransform, new Vector2(0.18f, 0f), new Vector2(0.82f, 1f), Vector2.zero, Vector2.zero);
+            }
         }
 
         private void UpdateTexts()

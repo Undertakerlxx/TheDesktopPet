@@ -21,9 +21,15 @@ namespace DesktopPet.UI
         private Renderer[] petRenderers;
         private Collider2D[] petColliders;
         private FeedingPopupController feedingPopup;
+        private GameSettingsPopupController gameSettingsPopup;
+        private bool statsDisplayEnabled = true;
+        private Vector3 defaultPetScale = Vector3.one;
+        private bool hasDefaultPetScale;
 
         private void Awake()
         {
+            statsDisplayEnabled = GameSettingsStore.IsStatsDisplayEnabled();
+            panelAnchoredPosition = GameSettingsStore.GetMenuAnchoredPosition();
             InitializePanel();
             InitializeWindows();
             HideAllWindows();
@@ -33,6 +39,7 @@ namespace DesktopPet.UI
         private void Start()
         {
             AutoWirePetReferences();
+            SetPetScaleMultiplier(GameSettingsStore.GetPetScaleMultiplier());
         }
 
         private void Update()
@@ -95,9 +102,21 @@ namespace DesktopPet.UI
         {
             HideMainPanel();
             HideAllWindows(false);
+            CloseGameSettingsPopup(false);
             CloseFeedingPopup(false);
 
             feedingPopup = FeedingPopupController.Show(transform, this);
+            SetPetAndStatsVisible(false);
+        }
+
+        public void OpenGameSettingsPopup()
+        {
+            HideMainPanel();
+            HideAllWindows(false);
+            CloseFeedingPopup(false);
+            CloseGameSettingsPopup(false);
+
+            gameSettingsPopup = GameSettingsPopupController.Show(transform, this);
             SetPetAndStatsVisible(false);
         }
 
@@ -113,6 +132,64 @@ namespace DesktopPet.UI
             {
                 SetPetAndStatsVisible(true);
             }
+        }
+
+        public void NotifyGameSettingsPopupClosed(GameSettingsPopupController popup)
+        {
+            if (gameSettingsPopup != popup)
+            {
+                return;
+            }
+
+            gameSettingsPopup = null;
+            if (!HasVisibleWindow())
+            {
+                SetPetAndStatsVisible(true);
+            }
+        }
+
+        public void SetStatsDisplayEnabled(bool enabled)
+        {
+            statsDisplayEnabled = enabled;
+            if (!HasVisibleWindow())
+            {
+                SetPetAndStatsVisible(true);
+            }
+            else if (statsDisplayRoot != null)
+            {
+                statsDisplayRoot.SetActive(false);
+            }
+        }
+
+        public bool IsStatsDisplayEnabled()
+        {
+            return statsDisplayEnabled;
+        }
+
+        public void SetMainPanelAnchoredPosition(Vector2 anchoredPosition)
+        {
+            panelAnchoredPosition = anchoredPosition;
+            if (mainPanelTransform != null)
+            {
+                mainPanelTransform.anchoredPosition = panelAnchoredPosition;
+            }
+        }
+
+        public void SetPetScaleMultiplier(float multiplier)
+        {
+            AutoWirePetReferences();
+            if (petRoot == null)
+            {
+                return;
+            }
+
+            if (!hasDefaultPetScale)
+            {
+                defaultPetScale = petRoot.transform.localScale;
+                hasDefaultPetScale = true;
+            }
+
+            petRoot.transform.localScale = defaultPetScale * multiplier;
         }
 
         public void CloseWindow(UIWindowType windowType)
@@ -136,6 +213,7 @@ namespace DesktopPet.UI
         private void HideAllWindows(bool restorePetAndStats)
         {
             CloseFeedingPopup(false);
+            CloseGameSettingsPopup(false);
 
             foreach (UIWindowController controller in windowLookup.Values)
             {
@@ -157,6 +235,23 @@ namespace DesktopPet.UI
 
             FeedingPopupController popup = feedingPopup;
             feedingPopup = null;
+            Destroy(popup.gameObject);
+
+            if (restorePetAndStats && !HasVisibleWindow())
+            {
+                SetPetAndStatsVisible(true);
+            }
+        }
+
+        private void CloseGameSettingsPopup(bool restorePetAndStats)
+        {
+            if (gameSettingsPopup == null)
+            {
+                return;
+            }
+
+            GameSettingsPopupController popup = gameSettingsPopup;
+            gameSettingsPopup = null;
             Destroy(popup.gameObject);
 
             if (restorePetAndStats && !HasVisibleWindow())
@@ -236,6 +331,12 @@ namespace DesktopPet.UI
                 }
             }
 
+            if (!hasDefaultPetScale && petRoot != null)
+            {
+                defaultPetScale = petRoot.transform.localScale;
+                hasDefaultPetScale = true;
+            }
+
             CachePetVisibilityTargets();
         }
 
@@ -261,6 +362,11 @@ namespace DesktopPet.UI
 
         private bool HasVisibleWindow()
         {
+            if (feedingPopup != null || gameSettingsPopup != null)
+            {
+                return true;
+            }
+
             foreach (UIWindowController controller in windowLookup.Values)
             {
                 if (controller != null && controller.windowLayer != null && controller.windowLayer.IsVisible)
@@ -280,7 +386,7 @@ namespace DesktopPet.UI
 
             if (statsDisplayRoot != null)
             {
-                statsDisplayRoot.SetActive(visible);
+                statsDisplayRoot.SetActive(visible && statsDisplayEnabled);
             }
         }
 
