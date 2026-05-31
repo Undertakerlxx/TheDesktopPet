@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using DesktopPet.UI;
 
 /// <summary>
 /// 在 Windows 平台上将 Unity 独立窗口配置为桌宠窗口。
@@ -42,9 +43,11 @@ public class WindowController : MonoBehaviour
     private void Start()
     {
         Debug.Log("WindowController Start");
+        topmost = GameSettingsStore.IsTopmostEnabled();
+        allowEscapeToQuit = GameSettingsStore.IsEscapeQuitEnabled();
         Application.runInBackground = true;
         QualitySettings.vSyncCount = 0;
-        Application.targetFrameRate = 144;
+        Application.targetFrameRate = GameSettingsStore.GetTargetFrameRate();
         StartCoroutine(InitializeWindowCoroutine());
     }
 
@@ -219,6 +222,16 @@ public class WindowController : MonoBehaviour
         return _windowPosition;
     }
 
+    public bool IsTopmost()
+    {
+        return topmost;
+    }
+
+    public bool IsEscapeToQuitEnabled()
+    {
+        return allowEscapeToQuit;
+    }
+
     /// <summary>
     /// 将窗口移动到指定的屏幕坐标。
     /// </summary>
@@ -235,6 +248,26 @@ public class WindowController : MonoBehaviour
         SetWindowPos(_hwnd, IntPtr.Zero, position.x, position.y, 0, 0,
             SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 #endif
+    }
+
+    public void SetTopmost(bool value)
+    {
+        topmost = value;
+
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+        if (!_initialized || _hwnd == IntPtr.Zero)
+        {
+            return;
+        }
+
+        IntPtr insertAfter = topmost ? HWND_TOPMOST : HWND_NOTOPMOST;
+        SetWindowPos(_hwnd, insertAfter, _windowPosition.x, _windowPosition.y, windowWidth, windowHeight, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+#endif
+    }
+
+    public void SetEscapeToQuit(bool value)
+    {
+        allowEscapeToQuit = value;
     }
 
     /// <summary>
