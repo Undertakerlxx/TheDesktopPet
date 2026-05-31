@@ -2,6 +2,7 @@ using System;
 using DesktopPet.Achievements;
 using DesktopPet.Catalog;
 using DesktopPet.Progress;
+using UnityEngine;
 
 namespace DesktopPet.Kitchen
 {
@@ -10,10 +11,11 @@ namespace DesktopPet.Kitchen
     /// </summary>
     public class KitchenService
     {
-        private const bool UseFiveSecondCookingForTesting = true;
+        private static readonly bool UseFiveSecondCookingForTesting = true;
         private static readonly TimeSpan TestCookingDuration = TimeSpan.FromSeconds(5);
 
         private readonly DesktopPetProgressService progressService;
+        private ThePetStatsManager statsManager;
 
         /// <summary>
         /// Gets the shared progress data used by the kitchen module.
@@ -32,6 +34,7 @@ namespace DesktopPet.Kitchen
         public KitchenService(DesktopPetProgressService progressService)
         {
             this.progressService = progressService ?? throw new ArgumentNullException(nameof(progressService));
+            statsManager = UnityEngine.Object.FindFirstObjectByType<ThePetStatsManager>();
             RemoveCompletedJobs();
         }
 
@@ -84,7 +87,7 @@ namespace DesktopPet.Kitchen
             {
                 recipeId = recipeId,
                 startedAtUtc = DateTime.UtcNow.ToString("o"),
-                cookMinutes = recipe.cookMinutes
+                cookMinutes = GetEffectiveDurationMinutes(recipe.cookMinutes)
             });
 
             progressService.Save();
@@ -98,9 +101,7 @@ namespace DesktopPet.Kitchen
         /// <returns>The active cooking duration. In test mode this is five seconds.</returns>
         public TimeSpan GetCookDuration(RecipeDefinition recipe)
         {
-            return UseFiveSecondCookingForTesting
-                ? TestCookingDuration
-                : TimeSpan.FromMinutes(recipe.cookMinutes);
+            return GetCookDuration(recipe, GetEffectiveDurationMinutes(recipe.cookMinutes));
         }
 
         /// <summary>
@@ -148,7 +149,7 @@ namespace DesktopPet.Kitchen
 
             DateTime startedAt = ParseUtcTime(job.startedAtUtc);
             RecipeDefinition recipe = KitchenDatabase.GetRecipe(job.recipeId);
-            DateTime completeAt = startedAt.Add(GetCookDuration(recipe));
+            DateTime completeAt = startedAt.Add(GetCookDuration(recipe, job.cookMinutes));
             TimeSpan remaining = completeAt - DateTime.UtcNow;
             return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
         }
@@ -170,6 +171,33 @@ namespace DesktopPet.Kitchen
             {
                 progressService.Save();
             }
+        }
+
+        private int GetEffectiveDurationMinutes(int baseMinutes)
+        {
+            return ProgressionDatabase.ApplyFocusEfficiency(baseMinutes, GetCurrentFocusValue());
+        }
+
+        private float GetCurrentFocusValue()
+        {
+            statsManager ??= UnityEngine.Object.FindFirstObjectByType<ThePetStatsManager>();
+            return statsManager != null && statsManager.current_stats != null
+                ? statsManager.current_stats.focus
+                : 0f;
+        }
+
+        private static TimeSpan GetCookDuration(RecipeDefinition recipe, int effectiveCookMinutes)
+        {
+            if (!UseFiveSecondCookingForTesting)
+            {
+                return TimeSpan.FromMinutes(Math.Max(1, effectiveCookMinutes));
+            }
+
+            int baseMinutes = Math.Max(1, recipe.cookMinutes);
+            int adjustedMinutes = Math.Max(1, effectiveCookMinutes);
+            double ratio = adjustedMinutes / (double)baseMinutes;
+            double seconds = Math.Max(1d, Math.Ceiling(TestCookingDuration.TotalSeconds * ratio));
+            return TimeSpan.FromSeconds(seconds);
         }
     }
 }

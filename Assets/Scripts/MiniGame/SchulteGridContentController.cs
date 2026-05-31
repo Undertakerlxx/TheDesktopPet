@@ -8,6 +8,7 @@ namespace DesktopPet.MiniGame
     public class SchulteGridContentController : MiniGameWindowContentController
     {
         private const string BestTimeKey = "MiniGame.SchulteGrid.BestTime";
+        protected override MiniGameKind ControlledGameKind => MiniGameKind.SchulteGrid;
 
         private readonly List<Button> numberButtons = new();
         private readonly List<Text> numberLabels = new();

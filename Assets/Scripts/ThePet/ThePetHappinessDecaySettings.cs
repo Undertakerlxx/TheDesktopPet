@@ -29,7 +29,7 @@ public class ThePetHappinessDecaySettings
 
     public float GetTotalDecayPerMinute(float satiety)
     {
-        return baseDecayPerMinute + GetSatietyDecayPerMinute(satiety);
+        return GetSatietyDecayPerMinute(satiety);
     }
 
     public float GetSatietyDecayPerMinute(float satiety)

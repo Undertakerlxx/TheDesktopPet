@@ -9,6 +9,7 @@ using UnityEngine;
 public class ThePetTouchInteraction : MonoBehaviour
 {
     private const float IntimacyIncreaseAmount = 5f;
+    private const float HappinessIncreaseAmount = 2f;
     private const float TouchCooldownSeconds = 20f;
 
     private ThePet pet;
@@ -56,6 +57,10 @@ public class ThePetTouchInteraction : MonoBehaviour
         if (statsManager != null && statsManager.current_stats != null)
         {
             statsManager.current_stats.intimacy += IntimacyIncreaseAmount;
+            statsManager.current_stats.happiness = Mathf.Clamp(
+                statsManager.current_stats.happiness + HappinessIncreaseAmount,
+                0f,
+                100f);
             statsManager.NotifyStatsChanged();
         }
 
@@ -82,7 +87,7 @@ public class ThePetTouchInteraction : MonoBehaviour
 
         float remainingSeconds = Mathf.Max(0f, nextAvailableTouchTime - Time.time);
         int waitSeconds = Mathf.CeilToInt(remainingSeconds);
-        string message = $"请稍等{waitSeconds}秒后再试";
+        string message = $"请稍等 {waitSeconds} 秒后再试";
 
         if (promptUI != null)
         {

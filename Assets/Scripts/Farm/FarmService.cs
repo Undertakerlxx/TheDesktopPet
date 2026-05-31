@@ -1,6 +1,7 @@
 using System;
 using DesktopPet.Achievements;
 using DesktopPet.Progress;
+using UnityEngine;
 
 namespace DesktopPet.Farm
 {
@@ -9,10 +10,11 @@ namespace DesktopPet.Farm
     /// </summary>
     public class FarmService
     {
-        private const bool UseFiveSecondGrowthForTesting = true;
+        private static readonly bool UseFiveSecondGrowthForTesting = true;
         private static readonly TimeSpan TestGrowthDuration = TimeSpan.FromSeconds(5);
 
         private readonly DesktopPetProgressService progressService;
+        private ThePetStatsManager statsManager;
 
         /// <summary>
         /// Gets the shared progress data used by the farm module.
@@ -31,6 +33,7 @@ namespace DesktopPet.Farm
         public FarmService(DesktopPetProgressService progressService)
         {
             this.progressService = progressService ?? throw new ArgumentNullException(nameof(progressService));
+            statsManager = UnityEngine.Object.FindFirstObjectByType<ThePetStatsManager>();
             Progress.EnsurePlotCount();
         }
 
@@ -69,7 +72,7 @@ namespace DesktopPet.Farm
             plot.isPlanted = true;
             plot.cropId = cropId;
             plot.plantedAtUtc = DateTime.UtcNow.ToString("o");
-            plot.matureMinutes = crop.matureMinutes;
+            plot.matureMinutes = GetEffectiveDurationMinutes(crop.matureMinutes);
             plot.fertilized = false;
 
             Progress.farmExperience += 1;
@@ -133,9 +136,7 @@ namespace DesktopPet.Farm
             }
 
             DateTime plantedAt = ParseUtcTime(plot.plantedAtUtc);
-            TimeSpan growthDuration = UseFiveSecondGrowthForTesting
-                ? TestGrowthDuration
-                : TimeSpan.FromMinutes(plot.matureMinutes);
+            TimeSpan growthDuration = GetGrowthDuration(plot);
             DateTime matureAt = plantedAt.Add(growthDuration);
             TimeSpan remaining = matureAt - DateTime.UtcNow;
             return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
@@ -184,6 +185,34 @@ namespace DesktopPet.Farm
             }
 
             return DateTime.UtcNow;
+        }
+
+        private int GetEffectiveDurationMinutes(int baseMinutes)
+        {
+            return ProgressionDatabase.ApplyFocusEfficiency(baseMinutes, GetCurrentFocusValue());
+        }
+
+        private float GetCurrentFocusValue()
+        {
+            statsManager ??= UnityEngine.Object.FindFirstObjectByType<ThePetStatsManager>();
+            return statsManager != null && statsManager.current_stats != null
+                ? statsManager.current_stats.focus
+                : 0f;
+        }
+
+        private static TimeSpan GetGrowthDuration(FarmPlotState plot)
+        {
+            if (!UseFiveSecondGrowthForTesting)
+            {
+                return TimeSpan.FromMinutes(Math.Max(1, plot.matureMinutes));
+            }
+
+            CropDefinition crop = FarmDatabase.GetCrop(plot.cropId);
+            int baseMinutes = Math.Max(1, crop.matureMinutes);
+            int effectiveMinutes = Math.Max(1, plot.matureMinutes);
+            double ratio = effectiveMinutes / (double)baseMinutes;
+            double seconds = Math.Max(1d, Math.Ceiling(TestGrowthDuration.TotalSeconds * ratio));
+            return TimeSpan.FromSeconds(seconds);
         }
     }
 }

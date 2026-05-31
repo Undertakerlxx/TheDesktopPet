@@ -10,6 +10,7 @@ namespace DesktopPet.MiniGame
     {
         private const string BestSurvivalKey = "MiniGame.DodgeBall.BestSurvival";
         private const float SuccessSurvivalThreshold = 20f;
+        protected override MiniGameKind ControlledGameKind => MiniGameKind.DodgeBall;
 
         private readonly List<BallView> balls = new();
 

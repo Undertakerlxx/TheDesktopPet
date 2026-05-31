@@ -4,11 +4,13 @@ using UnityEngine;
 
 public class ThePetStats : EntityStats<ThePetStats>
 {
-    //---------------¡¾»ù´¡ÊôĞÔ¡¿-----------------//
-    public float intimacy = 30.0f;//Ç×ÃÜ¶È
-    public float happiness = 66.0f;//¿ªĞÄÖµ                 
-    public float energy = 65.0f;//µ±Ç°»îÁ¦Öµ
-    public float energy_max = 100.0f;//»îÁ¦ÖµÉÏÏŞ
-    public float focus = 100.0f;//×¨×¢Öµ
-    public float satiety = 60.0f;//±¥Ê³¶È
+    //---------------ã€åŸºç¡€å±æ€§ã€‘-----------------//
+    public float intimacy = 30.0f;//äº²å¯†åº¦
+    public float happiness = 66.0f;//å¼€å¿ƒå€¼
+    public float energy = 65.0f;//å½“å‰æ´»åŠ›å€¼
+    public float energy_max = 100.0f;//æ´»åŠ›å€¼ä¸Šé™
+    public float focus = 100.0f;//ä¸“æ³¨å€¼
+    public float satiety = 60.0f;//é¥±é£Ÿåº¦
+    public int miniGameDailyIntimacyGain;//ä»Šæ—¥å°æ¸¸æˆç´¯è®¡äº²å¯†åº¦
+    public string miniGameDailyIntimacyDate;//ä»Šæ—¥å°æ¸¸æˆç´¯è®¡æ—¥æœŸ
 }

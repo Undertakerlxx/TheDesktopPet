@@ -10,6 +10,7 @@ namespace DesktopPet.MiniGame
         private const string BestScoreKey = "MiniGame.ColorGrid.BestScore";
         private const int ScorePerRound = 100;
         private const int SuccessScoreThreshold = 1000;
+        protected override MiniGameKind ControlledGameKind => MiniGameKind.ColorGrid;
 
         private Text instructionText;
         private Text statusText;
