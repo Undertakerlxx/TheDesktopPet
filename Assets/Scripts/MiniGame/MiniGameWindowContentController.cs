@@ -1,3 +1,4 @@
+using DesktopPet.Achievements;
 using DesktopPet.UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -132,6 +133,26 @@ namespace DesktopPet.MiniGame
         {
             cachedStatsManager ??= FindFirstObjectByType<ThePetStatsManager>();
             cachedStatsManager?.ApplyMiniGameResult(gameKind, success, brokeRecord, score, completionSeconds);
+
+            AchievementEventRecorder.Record(AchievementEventType.MiniGamePlayed);
+            if (success)
+            {
+                AchievementEventRecorder.Record(GetSuccessEventType(gameKind));
+            }
+        }
+
+        private static AchievementEventType GetSuccessEventType(MiniGameKind gameKind)
+        {
+            return gameKind switch
+            {
+                MiniGameKind.SchulteGrid => AchievementEventType.FocusGameSuccess,
+                MiniGameKind.ColorGrid => AchievementEventType.FocusGameSuccess,
+                MiniGameKind.EyeHandSpeed => AchievementEventType.ReactionGameSuccess,
+                MiniGameKind.GeometryAtAGlance => AchievementEventType.ReactionGameSuccess,
+                MiniGameKind.DinoRun => AchievementEventType.MovementGameSuccess,
+                MiniGameKind.DodgeBall => AchievementEventType.MovementGameSuccess,
+                _ => AchievementEventType.MiniGamePlayed
+            };
         }
 
         private RectTransform EnsureContentRoot()

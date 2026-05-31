@@ -1,4 +1,5 @@
 using System;
+using DesktopPet.Achievements;
 using DesktopPet.Progress;
 
 namespace DesktopPet.Farm
@@ -115,6 +116,7 @@ namespace DesktopPet.Farm
             ClearPlot(plot);
             Progress.EnsurePlotCount();
             progressService.Save();
+            AchievementEventRecorder.Record(AchievementEventType.FarmHarvest);
             return true;
         }
 
