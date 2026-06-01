@@ -7,7 +7,6 @@ namespace DesktopPet.MiniGame
 {
     public class SchulteGridContentController : MiniGameWindowContentController
     {
-        private const string BestTimeKey = "MiniGame.SchulteGrid.BestTime";
         protected override MiniGameKind ControlledGameKind => MiniGameKind.SchulteGrid;
 
         private readonly List<Button> numberButtons = new();
@@ -35,7 +34,7 @@ namespace DesktopPet.MiniGame
 
         protected override void BuildContent()
         {
-            bestTime = PlayerPrefs.GetFloat(BestTimeKey, 0f);
+            bestTime = LoadStoredBestFloat();
             rewardApplied = false;
 
             instructionText = MiniGameUiFactory.CreateText("InstructionText", ContentRoot, 18, TextAnchor.UpperLeft, new Color(0.24f, 0.24f, 0.24f));
@@ -211,8 +210,7 @@ namespace DesktopPet.MiniGame
             if (bestTime <= 0f || adjustedTime < bestTime)
             {
                 bestTime = adjustedTime;
-                PlayerPrefs.SetFloat(BestTimeKey, bestTime);
-                PlayerPrefs.Save();
+                SaveStoredBestFloat(bestTime);
                 resultText.text = $"\u5b8c\u6210\uff0c\u7528\u65f6 {timeBreakdown}s{modifierSuffix}\uff0c\u5237\u65b0\u6700\u4f73\u6210\u7ee9\u3002";
             }
             else

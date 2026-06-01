@@ -1,28 +1,13 @@
 using System;
 using System.IO;
+using DesktopPet.Accounts;
 using UnityEngine;
 
 namespace DesktopPet.Save
 {
     public class GameSaveManager : Singleton<GameSaveManager>
     {
-        private const string SaveDirectoryName = "Save";
-        private const string StatsFileName = "the-pet-stats.json";
-
-        private string statsSavePath;
-
-        private string StatsSavePath
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(statsSavePath))
-                {
-                    statsSavePath = Path.Combine(Application.persistentDataPath, SaveDirectoryName, StatsFileName);
-                }
-
-                return statsSavePath;
-            }
-        }
+        private string StatsSavePath => AccountPathProvider.GetPetStatsPath();
 
         protected override void Awake()
         {
@@ -31,8 +16,6 @@ namespace DesktopPet.Save
             {
                 return;
             }
-
-            _ = StatsSavePath;
         }
 
         public bool SaveStats(ThePetStats stats)

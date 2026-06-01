@@ -71,8 +71,11 @@ namespace DesktopPet.UI
             Button defaultButton = CreateButton(transform, "\u6062\u590d\u9ed8\u8ba4", new Vector2(42f, -320f), new Vector2(120f, 32f), 13);
             defaultButton.onClick.AddListener(ResetToDefault);
 
+            Button switchAccountButton = CreateButton(transform, "\u5207\u6362\u8d26\u53f7", new Vector2(180f, -320f), new Vector2(120f, 32f), 13);
+            switchAccountButton.onClick.AddListener(SwitchAccount);
+
             Text tipText = CreateText(transform, "TipText", new Vector2(22f, -370f), new Vector2(450f, 22f), 12, TextAnchor.MiddleLeft);
-            tipText.text = "\u70b9\u51fb\u53f3\u4fa7\u6309\u94ae\u5207\u6362\u5bf9\u5e94\u8bbe\u7f6e\uff0c\u6216\u76f4\u63a5\u9000\u51fa\u6e38\u620f\u3002";
+            tipText.text = "\u70b9\u51fb\u53f3\u4fa7\u6309\u94ae\u5207\u6362\u8bbe\u7f6e\uff0c\u4e5f\u53ef\u4ee5\u5728\u8fd9\u91cc\u5207\u6362\u8d26\u53f7\u6216\u9000\u51fa\u6e38\u620f\u3002";
 
             RefreshTexts();
             ApplyCurrentSettings();
@@ -136,6 +139,13 @@ namespace DesktopPet.UI
             escapeQuitEnabled = GameSettingsStore.IsEscapeQuitEnabled();
             ApplyCurrentSettings();
             RefreshTexts();
+        }
+
+        private void SwitchAccount()
+        {
+            DesktopPet.Accounts.LoginBootstrap bootstrap = FindFirstObjectByType<DesktopPet.Accounts.LoginBootstrap>();
+            Close();
+            bootstrap?.SwitchAccount();
         }
 
         private void ApplyCurrentSettings()

@@ -1,13 +1,12 @@
 using System;
 using System.IO;
+using DesktopPet.Accounts;
 using UnityEngine;
 
 namespace DesktopPet.Achievements
 {
     public static class AchievementEventRecorder
     {
-        private const string SaveFileName = "achievement-progress.json";
-
         public static void Record(AchievementEventType eventType, int count = 1, float amount = 0f)
         {
             Record(eventType.ToString(), count, amount);
@@ -79,7 +78,7 @@ namespace DesktopPet.Achievements
 
         private static string GetSavePath()
         {
-            return Path.Combine(Application.persistentDataPath, SaveFileName);
+            return AccountPathProvider.GetAchievementPath();
         }
     }
 }

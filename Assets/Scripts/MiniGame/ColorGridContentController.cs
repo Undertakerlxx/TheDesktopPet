@@ -7,7 +7,6 @@ namespace DesktopPet.MiniGame
 {
     public class ColorGridContentController : MiniGameWindowContentController
     {
-        private const string BestScoreKey = "MiniGame.ColorGrid.BestScore";
         private const int ScorePerRound = 100;
         private const int SuccessScoreThreshold = 1000;
         protected override MiniGameKind ControlledGameKind => MiniGameKind.ColorGrid;
@@ -41,7 +40,7 @@ namespace DesktopPet.MiniGame
 
         protected override void BuildContent()
         {
-            bestScore = PlayerPrefs.GetInt(BestScoreKey, 0);
+            bestScore = LoadStoredBestScore();
             rewardApplied = false;
 
             instructionText = MiniGameUiFactory.CreateText("InstructionText", ContentRoot, 18, TextAnchor.UpperLeft, new Color(0.24f, 0.24f, 0.24f));
@@ -206,8 +205,7 @@ namespace DesktopPet.MiniGame
                 {
                     bestScore = adjustedScore;
                     sessionBrokeRecord = true;
-                    PlayerPrefs.SetInt(BestScoreKey, bestScore);
-                    PlayerPrefs.Save();
+                    SaveStoredBestScore(bestScore);
                 }
 
                 resultText.text = "\u627e\u5230\u4e86\uff0c\u8fdb\u5165\u4e0b\u4e00\u5173\u3002";

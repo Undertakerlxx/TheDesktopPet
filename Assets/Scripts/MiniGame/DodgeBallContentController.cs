@@ -8,7 +8,6 @@ namespace DesktopPet.MiniGame
 {
     public class DodgeBallContentController : MiniGameWindowContentController
     {
-        private const string BestSurvivalKey = "MiniGame.DodgeBall.BestSurvival";
         private const float SuccessSurvivalThreshold = 20f;
         protected override MiniGameKind ControlledGameKind => MiniGameKind.DodgeBall;
 
@@ -41,7 +40,7 @@ namespace DesktopPet.MiniGame
 
         protected override void BuildContent()
         {
-            bestSurvival = PlayerPrefs.GetFloat(BestSurvivalKey, 0f);
+            bestSurvival = LoadStoredBestFloat();
             rewardApplied = false;
 
             instructionText = MiniGameUiFactory.CreateText("InstructionText", ContentRoot, 18, TextAnchor.UpperLeft, new Color(0.24f, 0.24f, 0.24f));
@@ -276,8 +275,7 @@ namespace DesktopPet.MiniGame
             if (adjustedSurvival > bestSurvival)
             {
                 bestSurvival = adjustedSurvival;
-                PlayerPrefs.SetFloat(BestSurvivalKey, bestSurvival);
-                PlayerPrefs.Save();
+                SaveStoredBestFloat(bestSurvival);
                 resultText.text = $"\u6311\u6218\u7ed3\u675f\uff0c\u575a\u6301\u4e86 {survivalBreakdown}s{modifierSuffix}\uff0c\u5237\u65b0\u6700\u4f73\u8bb0\u5f55\u3002";
             }
             else

@@ -12181,8 +12181,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fea8008a72fdc984d9a9ac25d720a565, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  windowWidth: 512
-  windowHeight: 512
+  windowWidth: 720
+  windowHeight: 720
   screenMarginRight: 80
   screenMarginBottom: 120
   topmost: 1

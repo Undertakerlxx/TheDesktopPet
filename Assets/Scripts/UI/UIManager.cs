@@ -22,6 +22,7 @@ namespace DesktopPet.UI
         private Collider2D[] petColliders;
         private FeedingPopupController feedingPopup;
         private GameSettingsPopupController gameSettingsPopup;
+        private AIChatPanelController aiChatPanel;
         private bool statsDisplayEnabled = true;
         private Vector3 defaultPetScale = Vector3.one;
         private bool hasDefaultPetScale;
@@ -88,6 +89,7 @@ namespace DesktopPet.UI
         public void OpenWindow(UIWindowType windowType)
         {
             HideMainPanel();
+            CloseAiChatPanel(false);
             CloseFeedingPopup(false);
             HideAllWindows(false);
 
@@ -101,6 +103,7 @@ namespace DesktopPet.UI
         public void OpenFeedingPopup()
         {
             HideMainPanel();
+            CloseAiChatPanel(false);
             HideAllWindows(false);
             CloseGameSettingsPopup(false);
             CloseFeedingPopup(false);
@@ -112,11 +115,24 @@ namespace DesktopPet.UI
         public void OpenGameSettingsPopup()
         {
             HideMainPanel();
+            CloseAiChatPanel(false);
             HideAllWindows(false);
             CloseFeedingPopup(false);
             CloseGameSettingsPopup(false);
 
             gameSettingsPopup = GameSettingsPopupController.Show(transform, this);
+            SetPetAndStatsVisible(false);
+        }
+
+        public void OpenAiChatPanel()
+        {
+            HideMainPanel();
+            HideAllWindows(false);
+            CloseFeedingPopup(false);
+            CloseGameSettingsPopup(false);
+            CloseAiChatPanel(false);
+
+            aiChatPanel = AIChatPanelController.Show(transform, this);
             SetPetAndStatsVisible(false);
         }
 
@@ -142,6 +158,20 @@ namespace DesktopPet.UI
             }
 
             gameSettingsPopup = null;
+            if (!HasVisibleWindow())
+            {
+                SetPetAndStatsVisible(true);
+            }
+        }
+
+        public void NotifyAiChatPanelClosed(AIChatPanelController panel)
+        {
+            if (aiChatPanel != panel)
+            {
+                return;
+            }
+
+            aiChatPanel = null;
             if (!HasVisibleWindow())
             {
                 SetPetAndStatsVisible(true);
@@ -212,6 +242,7 @@ namespace DesktopPet.UI
 
         private void HideAllWindows(bool restorePetAndStats)
         {
+            CloseAiChatPanel(false);
             CloseFeedingPopup(false);
             CloseGameSettingsPopup(false);
 
@@ -253,6 +284,23 @@ namespace DesktopPet.UI
             GameSettingsPopupController popup = gameSettingsPopup;
             gameSettingsPopup = null;
             Destroy(popup.gameObject);
+
+            if (restorePetAndStats && !HasVisibleWindow())
+            {
+                SetPetAndStatsVisible(true);
+            }
+        }
+
+        private void CloseAiChatPanel(bool restorePetAndStats)
+        {
+            if (aiChatPanel == null)
+            {
+                return;
+            }
+
+            AIChatPanelController panel = aiChatPanel;
+            aiChatPanel = null;
+            Destroy(panel.gameObject);
 
             if (restorePetAndStats && !HasVisibleWindow())
             {
@@ -362,7 +410,7 @@ namespace DesktopPet.UI
 
         private bool HasVisibleWindow()
         {
-            if (feedingPopup != null || gameSettingsPopup != null)
+            if (feedingPopup != null || gameSettingsPopup != null || aiChatPanel != null)
             {
                 return true;
             }

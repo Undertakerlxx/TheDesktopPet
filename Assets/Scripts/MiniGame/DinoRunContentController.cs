@@ -8,7 +8,6 @@ namespace DesktopPet.MiniGame
 {
     public class DinoRunContentController : MiniGameWindowContentController
     {
-        private const string BestDistanceKey = "MiniGame.DinoRun.BestDistance";
         private const float SuccessDistanceThreshold = 1000f;
         private const float DinoWidth = 46f;
         private const float DinoHeight = 34f;
@@ -49,7 +48,7 @@ namespace DesktopPet.MiniGame
 
         protected override void BuildContent()
         {
-            bestDistance = PlayerPrefs.GetFloat(BestDistanceKey, 0f);
+            bestDistance = LoadStoredBestFloat();
             rewardApplied = false;
 
             instructionText = MiniGameUiFactory.CreateText("InstructionText", ContentRoot, 18, TextAnchor.UpperLeft, new Color(0.24f, 0.24f, 0.24f));
@@ -277,8 +276,7 @@ namespace DesktopPet.MiniGame
             if (adjustedDistance > bestDistance)
             {
                 bestDistance = adjustedDistance;
-                PlayerPrefs.SetFloat(BestDistanceKey, bestDistance);
-                PlayerPrefs.Save();
+                SaveStoredBestFloat(bestDistance);
                 resultText.text = $"\u649e\u4e0a\u969c\u788d\uff0c\u91cc\u7a0b {distanceBreakdown}{modifierSuffix}\uff0c\u5237\u65b0\u4e86\u6700\u4f73\u8bb0\u5f55\u3002";
             }
             else

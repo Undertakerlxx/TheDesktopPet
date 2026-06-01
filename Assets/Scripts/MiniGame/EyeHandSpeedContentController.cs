@@ -7,7 +7,6 @@ namespace DesktopPet.MiniGame
 {
     public partial class EyeHandSpeedContentController : MiniGameWindowContentController
     {
-        private const string BestScoreKey = "MiniGame.EyeHandSpeed.BestScore";
         private const float TotalRoundTime = 30f;
         private const int ScorePerHit = 100;
         private const int SuccessScoreThreshold = 1000;
@@ -53,7 +52,7 @@ namespace DesktopPet.MiniGame
 
         protected override void BuildContent()
         {
-            bestScore = PlayerPrefs.GetInt(BestScoreKey, 0);
+            bestScore = LoadStoredBestScore();
             rewardApplied = false;
 
             instructionText = MiniGameUiFactory.CreateText("InstructionText", ContentRoot, 18, TextAnchor.UpperLeft, new Color(0.24f, 0.24f, 0.24f));
@@ -279,8 +278,7 @@ namespace DesktopPet.MiniGame
             if (adjustedScore > bestScore)
             {
                 bestScore = adjustedScore;
-                PlayerPrefs.SetInt(BestScoreKey, bestScore);
-                PlayerPrefs.Save();
+                SaveStoredBestScore(bestScore);
                 message = $"{message} \u5237\u65b0\u4e86\u6700\u4f73\u6210\u7ee9\u3002";
             }
 

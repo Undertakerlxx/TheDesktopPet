@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using DesktopPet.Accounts;
 using DesktopPet.Catalog;
 using DesktopPet.Farm;
 using DesktopPet.Inventory;
@@ -14,9 +15,7 @@ namespace DesktopPet.Progress
     /// </summary>
     public class DesktopPetProgressService
     {
-        private const string SaveFileName = "farm-kitchen-catalog-progress.json";
-
-        private readonly string savePath;
+        private string SavePath => AccountPathProvider.GetProgressPath();
 
         /// <summary>
         /// Gets the currently loaded progress data.
@@ -28,7 +27,6 @@ namespace DesktopPet.Progress
         /// </summary>
         public DesktopPetProgressService()
         {
-            savePath = Path.Combine(Application.persistentDataPath, SaveFileName);
             Data = Load();
         }
 
@@ -38,14 +36,14 @@ namespace DesktopPet.Progress
         /// <returns>The loaded or default progress data.</returns>
         public DesktopPetProgressData Load()
         {
-            if (!File.Exists(savePath))
+            if (!File.Exists(SavePath))
             {
                 return CreateDefaultData();
             }
 
             try
             {
-                string json = File.ReadAllText(savePath);
+                string json = File.ReadAllText(SavePath);
                 DesktopPetProgressData data = JsonUtility.FromJson<DesktopPetProgressData>(json);
                 if (data == null)
                 {
@@ -78,14 +76,14 @@ namespace DesktopPet.Progress
         {
             try
             {
-                string directory = Path.GetDirectoryName(savePath);
+                string directory = Path.GetDirectoryName(SavePath);
                 if (!string.IsNullOrEmpty(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }
 
                 string json = JsonUtility.ToJson(Data, true);
-                File.WriteAllText(savePath, json);
+                File.WriteAllText(SavePath, json);
             }
             catch (Exception exception)
             {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using DesktopPet.Accounts;
 using UnityEngine;
 
 namespace DesktopPet.Storage
@@ -15,23 +16,18 @@ namespace DesktopPet.Storage
 
     public class TimerHistoryStorage
     {
-        private readonly string historyPath;
-
-        public TimerHistoryStorage()
-        {
-            historyPath = Path.Combine(Application.persistentDataPath, "timer-history.json");
-        }
+        private string HistoryPath => AccountPathProvider.GetTimerHistoryPath();
 
         public List<TimerHistoryRecord> Load()
         {
-            if (!File.Exists(historyPath))
+            if (!File.Exists(HistoryPath))
             {
                 return new List<TimerHistoryRecord>();
             }
 
             try
             {
-                string json = File.ReadAllText(historyPath);
+                string json = File.ReadAllText(HistoryPath);
                 TimerHistoryData data = JsonUtility.FromJson<TimerHistoryData>(json);
                 return data?.records ?? new List<TimerHistoryRecord>();
             }
@@ -46,7 +42,7 @@ namespace DesktopPet.Storage
         {
             try
             {
-                string directory = Path.GetDirectoryName(historyPath);
+                string directory = Path.GetDirectoryName(HistoryPath);
                 if (!string.IsNullOrEmpty(directory))
                 {
                     Directory.CreateDirectory(directory);
@@ -54,7 +50,7 @@ namespace DesktopPet.Storage
 
                 TimerHistoryData data = new TimerHistoryData { records = records };
                 string json = JsonUtility.ToJson(data, true);
-                File.WriteAllText(historyPath, json);
+                File.WriteAllText(HistoryPath, json);
             }
             catch (Exception exception)
             {

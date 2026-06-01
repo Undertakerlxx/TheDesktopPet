@@ -7,7 +7,6 @@ namespace DesktopPet.MiniGame
 {
     public partial class GeometryAtAGlanceContentController : MiniGameWindowContentController
     {
-        private const string BestScoreKey = "MiniGame.GeometryAtAGlance.BestScore";
         private const float InitialMemorizeTime = 6.8f;
         private const float MinimumMemorizeTime = 1.8f;
         private const float MemorizeTimeDecayPerLevel = 0.26f;
@@ -60,7 +59,7 @@ namespace DesktopPet.MiniGame
 
         protected override void BuildContent()
         {
-            bestScore = PlayerPrefs.GetInt(BestScoreKey, 0);
+            bestScore = LoadStoredBestScore();
             rewardApplied = false;
 
             instructionText = MiniGameUiFactory.CreateText("InstructionText", ContentRoot, 18, TextAnchor.UpperLeft, new Color(0.24f, 0.24f, 0.24f));
@@ -261,8 +260,7 @@ namespace DesktopPet.MiniGame
                 {
                     bestScore = adjustedScore;
                     sessionBrokeRecord = true;
-                    PlayerPrefs.SetInt(BestScoreKey, bestScore);
-                    PlayerPrefs.Save();
+                    SaveStoredBestScore(bestScore);
                 }
 
                 resultText.text = "\u5224\u65ad\u6b63\u786e\uff0c\u8fdb\u5165\u4e0b\u4e00\u5173\u3002";

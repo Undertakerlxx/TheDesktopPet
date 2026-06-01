@@ -7,7 +7,7 @@ namespace DesktopPet.UI
     {
         private const string RuntimeFeedingButtonName = "RuntimeFeedingButton";
         private const string RuntimeSettingsButtonName = "RuntimeSettingsButton";
-        private const float RowSplit = 0.5f;
+        private const string RuntimeAiChatButtonName = "RuntimeAiChatButton";
 
         public Button skinButton;
         public Button timerButton;
@@ -15,6 +15,7 @@ namespace DesktopPet.UI
         public Button farmButton;
         public Button kitchenButton;
         public Button feedingButton;
+        public Button aiChatButton;
         public Button achievementButton;
         public Button settingsButton;
         public Button exitButton;
@@ -28,6 +29,7 @@ namespace DesktopPet.UI
             BindButton(farmButton, UIWindowType.Farm);
             BindButton(kitchenButton, UIWindowType.Kitchen);
             BindFeedingButton();
+            BindAiChatButton();
             BindButton(achievementButton, UIWindowType.Achievement);
             BindSettingsButton();
             RemoveExitButton();
@@ -59,6 +61,22 @@ namespace DesktopPet.UI
 
             feedingButton.onClick.RemoveAllListeners();
             feedingButton.onClick.AddListener(() => uiManager.OpenFeedingPopup());
+        }
+
+        private void BindAiChatButton()
+        {
+            if (aiChatButton == null)
+            {
+                aiChatButton = CreateRuntimeUtilityButton(RuntimeAiChatButtonName, "AI\u804a\u5929");
+            }
+
+            if (aiChatButton == null)
+            {
+                return;
+            }
+
+            aiChatButton.onClick.RemoveAllListeners();
+            aiChatButton.onClick.AddListener(() => uiManager.OpenAiChatPanel());
         }
 
         private void BindSettingsButton()
@@ -113,15 +131,17 @@ namespace DesktopPet.UI
 
         private void LayoutButtons()
         {
-            ConfigureButtonSlot(skinButton, 0f, 0.25f, RowSplit, 1f);
-            ConfigureButtonSlot(timerButton, 0.25f, 0.5f, RowSplit, 1f);
-            ConfigureButtonSlot(miniGameButton, 0.5f, 0.75f, RowSplit, 1f);
-            ConfigureButtonSlot(farmButton, 0.75f, 1f, RowSplit, 1f);
+            ConfigureButtonSlot(skinButton, 0f, 1f / 3f, 2f / 3f, 1f);
+            ConfigureButtonSlot(timerButton, 1f / 3f, 2f / 3f, 2f / 3f, 1f);
+            ConfigureButtonSlot(miniGameButton, 2f / 3f, 1f, 2f / 3f, 1f);
 
-            ConfigureButtonSlot(kitchenButton, 0f, 0.25f, 0f, RowSplit);
-            ConfigureButtonSlot(settingsButton, 0.25f, 0.5f, 0f, RowSplit);
-            ConfigureButtonSlot(feedingButton, 0.5f, 0.75f, 0f, RowSplit);
-            ConfigureButtonSlot(achievementButton, 0.75f, 1f, 0f, RowSplit);
+            ConfigureButtonSlot(farmButton, 0f, 1f / 3f, 1f / 3f, 2f / 3f);
+            ConfigureButtonSlot(kitchenButton, 1f / 3f, 2f / 3f, 1f / 3f, 2f / 3f);
+            ConfigureButtonSlot(feedingButton, 2f / 3f, 1f, 1f / 3f, 2f / 3f);
+
+            ConfigureButtonSlot(aiChatButton, 0f, 1f / 3f, 0f, 1f / 3f);
+            ConfigureButtonSlot(achievementButton, 1f / 3f, 2f / 3f, 0f, 1f / 3f);
+            ConfigureButtonSlot(settingsButton, 2f / 3f, 1f, 0f, 1f / 3f);
         }
 
         private void RemoveExitButton()
@@ -171,7 +191,7 @@ namespace DesktopPet.UI
                     labelRect.sizeDelta = Vector2.zero;
                 }
 
-                label.fontSize = 18;
+                label.fontSize = 16;
                 label.alignment = TextAnchor.MiddleCenter;
                 label.resizeTextForBestFit = false;
                 label.horizontalOverflow = HorizontalWrapMode.Overflow;

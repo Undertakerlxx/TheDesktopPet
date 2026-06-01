@@ -10,6 +10,9 @@ namespace DesktopPet.UI
         private const string StatsDisplayKey = "GameSettings.StatsDisplay";
         private const string EscapeQuitKey = "GameSettings.EscapeQuit";
         private const string MenuPositionIndexKey = "GameSettings.MenuPositionIndex";
+        private const string AiChatEndpointKey = "GameSettings.AIChat.Endpoint";
+        private const string AiChatApiKeyKey = "GameSettings.AIChat.ApiKey";
+        private const string AiChatModelKey = "GameSettings.AIChat.Model";
 
         public static readonly string[] FrameRateLabels = { "60 FPS", "120 FPS", "144 FPS" };
         public static readonly int[] FrameRateValues = { 60, 120, 144 };
@@ -101,6 +104,39 @@ namespace DesktopPet.UI
         public static void SetMenuPositionIndex(int index)
         {
             PlayerPrefs.SetInt(MenuPositionIndexKey, Mathf.Clamp(index, 0, MenuPositionLabels.Length - 1));
+            PlayerPrefs.Save();
+        }
+
+        public static string GetAiChatEndpoint()
+        {
+            return PlayerPrefs.GetString(AiChatEndpointKey, string.Empty);
+        }
+
+        public static void SetAiChatEndpoint(string endpoint)
+        {
+            PlayerPrefs.SetString(AiChatEndpointKey, endpoint ?? string.Empty);
+            PlayerPrefs.Save();
+        }
+
+        public static string GetAiChatApiKey()
+        {
+            return PlayerPrefs.GetString(AiChatApiKeyKey, string.Empty);
+        }
+
+        public static void SetAiChatApiKey(string apiKey)
+        {
+            PlayerPrefs.SetString(AiChatApiKeyKey, apiKey ?? string.Empty);
+            PlayerPrefs.Save();
+        }
+
+        public static string GetAiChatModel()
+        {
+            return PlayerPrefs.GetString(AiChatModelKey, string.Empty);
+        }
+
+        public static void SetAiChatModel(string model)
+        {
+            PlayerPrefs.SetString(AiChatModelKey, model ?? string.Empty);
             PlayerPrefs.Save();
         }
 

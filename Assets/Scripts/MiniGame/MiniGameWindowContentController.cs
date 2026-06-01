@@ -19,6 +19,7 @@ namespace DesktopPet.MiniGame
 
         private bool isBuilt;
         private ThePetStatsManager cachedStatsManager;
+        private readonly MiniGameRecordStorage miniGameRecordStorage = new();
 
         public void InitializeContent(FeatureWindowController hostWindow, UIManager uiManager)
         {
@@ -253,6 +254,60 @@ namespace DesktopPet.MiniGame
             return delta <= 0f || SessionScoreModifierPercent == 0
                 ? adjustedText
                 : $"{rawText}{(SessionScoreModifierPercent > 0 ? "+" : "-")}{deltaText}={adjustedText}";
+        }
+
+        protected int LoadStoredBestScore()
+        {
+            return ControlledGameKind switch
+            {
+                MiniGameKind.ColorGrid => miniGameRecordStorage.GetColorGridBestScore(),
+                MiniGameKind.EyeHandSpeed => miniGameRecordStorage.GetEyeHandSpeedBestScore(),
+                MiniGameKind.GeometryAtAGlance => miniGameRecordStorage.GetGeometryBestScore(),
+                _ => 0
+            };
+        }
+
+        protected void SaveStoredBestScore(int bestScore)
+        {
+            switch (ControlledGameKind)
+            {
+                case MiniGameKind.ColorGrid:
+                    miniGameRecordStorage.SetColorGridBestScore(bestScore);
+                    break;
+                case MiniGameKind.EyeHandSpeed:
+                    miniGameRecordStorage.SetEyeHandSpeedBestScore(bestScore);
+                    break;
+                case MiniGameKind.GeometryAtAGlance:
+                    miniGameRecordStorage.SetGeometryBestScore(bestScore);
+                    break;
+            }
+        }
+
+        protected float LoadStoredBestFloat()
+        {
+            return ControlledGameKind switch
+            {
+                MiniGameKind.SchulteGrid => miniGameRecordStorage.GetSchulteBestTime(),
+                MiniGameKind.DinoRun => miniGameRecordStorage.GetDinoRunBestDistance(),
+                MiniGameKind.DodgeBall => miniGameRecordStorage.GetDodgeBallBestSurvival(),
+                _ => 0f
+            };
+        }
+
+        protected void SaveStoredBestFloat(float bestValue)
+        {
+            switch (ControlledGameKind)
+            {
+                case MiniGameKind.SchulteGrid:
+                    miniGameRecordStorage.SetSchulteBestTime(bestValue);
+                    break;
+                case MiniGameKind.DinoRun:
+                    miniGameRecordStorage.SetDinoRunBestDistance(bestValue);
+                    break;
+                case MiniGameKind.DodgeBall:
+                    miniGameRecordStorage.SetDodgeBallBestSurvival(bestValue);
+                    break;
+            }
         }
 
         private static float RoundToDecimals(float value, int decimals)

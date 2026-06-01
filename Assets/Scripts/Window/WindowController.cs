@@ -19,8 +19,8 @@ using DesktopPet.UI;
 public class WindowController : MonoBehaviour
 {
     [Header("Window")]
-    [SerializeField] private int windowWidth = 512;
-    [SerializeField] private int windowHeight = 512;
+    [SerializeField] private int windowWidth = 720;
+    [SerializeField] private int windowHeight = 720;
     [SerializeField] private int screenMarginRight = 80;
     [SerializeField] private int screenMarginBottom = 120;
     [SerializeField] private bool topmost = true;
@@ -48,6 +48,11 @@ public class WindowController : MonoBehaviour
         Application.runInBackground = true;
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = GameSettingsStore.GetTargetFrameRate();
+
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+        Screen.SetResolution(windowWidth, windowHeight, false);
+#endif
+
         StartCoroutine(InitializeWindowCoroutine());
     }
 
