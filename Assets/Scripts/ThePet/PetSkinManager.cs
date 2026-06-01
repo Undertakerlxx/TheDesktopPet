@@ -1,12 +1,13 @@
 using System;
 using System.Collections;
+using System.IO;
+using DesktopPet.Accounts;
 using UnityEngine;
 
 [RequireComponent(typeof(Animator))]
 public class PetSkinManager : MonoBehaviour
 {
     private const string DefaultLibraryResourcePath = "PetSkinLibrary";
-    private const string SelectedSkinPlayerPrefsKey = "PetSkinManager.SelectedSkinIndex";
     private const string IdleStateName = "Idle";
     private const string HappyStateName = "Happy";
     private const string HungryStateName = "Hungry";
@@ -40,6 +41,12 @@ public class PetSkinManager : MonoBehaviour
     private ThePetStatsManager statsManager;
     private PetSkinUnlockService unlockService;
     private bool saveSelectionEnabled;
+
+    [Serializable]
+    private class SelectedSkinSaveData
+    {
+        public int selectedSkinIndex;
+    }
 
     private void Awake()
     {
@@ -90,7 +97,7 @@ public class PetSkinManager : MonoBehaviour
         yield return null;
         saveSelectionEnabled = true;
 
-        int savedSkinIndex = PlayerPrefs.GetInt(SelectedSkinPlayerPrefsKey, selectedSkinIndex);
+        int savedSkinIndex = LoadSavedSkinIndex();
         int unlockedSkinIndex = GetUnlockedSelectedSkinIndex(savedSkinIndex);
         if (unlockedSkinIndex != selectedSkinIndex)
         {
@@ -200,8 +207,7 @@ public class PetSkinManager : MonoBehaviour
         selectedSkinIndex = clampedIndex;
         if (saveSelectionEnabled)
         {
-            PlayerPrefs.SetInt(SelectedSkinPlayerPrefsKey, selectedSkinIndex);
-            PlayerPrefs.Save();
+            SaveSelectedSkinIndex();
         }
 
         if (pet != null && pet.states != null && pet.states.current != null)
@@ -238,6 +244,19 @@ public class PetSkinManager : MonoBehaviour
         }
 
         return true;
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+        {
+            SaveSelectedSkinIndex();
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        SaveSelectedSkinIndex();
     }
 
     private PetSkinUnlockService GetUnlockService()
@@ -278,5 +297,63 @@ public class PetSkinManager : MonoBehaviour
         }
 
         return null;
+    }
+
+    private int LoadSavedSkinIndex()
+    {
+        string savePath = GetSelectedSkinSavePath();
+        if (File.Exists(savePath))
+        {
+            try
+            {
+                string json = File.ReadAllText(savePath);
+                SelectedSkinSaveData data = JsonUtility.FromJson<SelectedSkinSaveData>(json);
+                if (data != null)
+                {
+                    return data.selectedSkinIndex;
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"PetSkinManager: failed to load selected skin. {exception.Message}");
+            }
+        }
+
+        return selectedSkinIndex;
+    }
+
+    private void SaveSelectedSkinIndex()
+    {
+        if (!saveSelectionEnabled)
+        {
+            return;
+        }
+
+        try
+        {
+            string savePath = GetSelectedSkinSavePath();
+            string directory = Path.GetDirectoryName(savePath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            SelectedSkinSaveData data = new()
+            {
+                selectedSkinIndex = selectedSkinIndex
+            };
+
+            string json = JsonUtility.ToJson(data, true);
+            File.WriteAllText(savePath, json);
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning($"PetSkinManager: failed to save selected skin. {exception.Message}");
+        }
+    }
+
+    private static string GetSelectedSkinSavePath()
+    {
+        return Path.Combine(AccountPathProvider.GetCurrentAccountRoot(), "selected-skin.json");
     }
 }
