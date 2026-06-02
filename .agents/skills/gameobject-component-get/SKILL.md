@@ -1,13 +1,27 @@
 ---
 name: gameobject-component-get
-description: |-
-  Get detailed information about a specific Component on a GameObject. Returns component type, enabled state, and optionally serialized fields and properties. Use this to inspect component data before modifying it. Use 'gameobject-find' tool to get the list of all components on the GameObject.
-  
-  Path-scoped reads (token-saving): supply 'paths' (a list of paths) to read only the listed fields/elements via Reflector.TryReadAt, or 'viewQuery' (a ViewQuery) to navigate to a subtree and/or filter by name regex / max depth / type via Reflector.View. The result is returned in the 'View' field of the response. These two parameters are mutually exclusive — supply at most one.
-  Path syntax: 'fieldName', 'nested/field', 'arrayField/[i]', 'dictField/[key]'. Leading '#/' is stripped.
+description: Get detailed information about a specific Component on a GameObject — type, enabled state, and (optionally) serialized fields and properties. Supports token-saving path-scoped reads via `paths` or `viewQuery`. Use 'gameobject-find' to list components first.
 ---
 
 # GameObject / Component / Get
+
+Get detailed information about a specific Component on a GameObject. Returns component type, enabled state, and optionally serialized fields and properties. Use this to inspect component data before modifying it. Use 'gameobject-find' tool to get the list of all components on the GameObject.
+
+## Inputs
+
+- `gameObjectRef` — the host GameObject.
+- `componentRef` — the specific component to inspect (matched by index or instance ID).
+- `includeFields` (default `true`) — populate the legacy `Fields` list.
+- `includeProperties` (default `true`) — populate the legacy `Properties` list.
+- `deepSerialization` (default `false`) — when populating legacy lists, recurse into nested members.
+
+## Path-scoped reads (token-saving)
+
+Supply `paths` (a list of paths) to read only the listed fields/elements via `Reflector.TryReadAt`, or `viewQuery` (a `ViewQuery`) to navigate to a subtree and/or filter by name regex / max depth / type via `Reflector.View`. The result is returned in the `View` field of the response, and the legacy `Fields`/`Properties` lists are skipped. These two parameters are mutually exclusive — supply at most one.
+
+## Path syntax
+
+`fieldName`, `nested/field`, `arrayField/[i]`, `dictField/[key]`. Leading `#/` is stripped.
 
 ## How to Call
 
@@ -60,10 +74,10 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "gameObjectRef": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.GameObjectRef"
+      "$ref": "#/$defs/AIGD.GameObjectRef"
     },
     "componentRef": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.ComponentRef"
+      "$ref": "#/$defs/AIGD.ComponentRef"
     },
     "includeFields": {
       "type": "boolean"
@@ -75,7 +89,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       "type": "boolean"
     },
     "paths": {
-      "$ref": "#/$defs/System.Collections.Generic.List<System.String>"
+      "$ref": "#/$defs/System.Collections.Generic.List(System.String)"
     },
     "viewQuery": {
       "$ref": "#/$defs/com.IvanMurzak.ReflectorNet.Model.ViewQuery"
@@ -85,7 +99,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
     "System.Type": {
       "type": "string"
     },
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.GameObjectRef": {
+    "AIGD.GameObjectRef": {
       "type": "object",
       "properties": {
         "instanceID": {
@@ -118,7 +132,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       ],
       "description": "Find GameObject in opened Prefab or in the active Scene."
     },
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.ComponentRef": {
+    "AIGD.ComponentRef": {
       "type": "object",
       "properties": {
         "index": {
@@ -140,7 +154,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       ],
       "description": "Component reference. Used to find a Component at GameObject."
     },
-    "System.Collections.Generic.List<System.String>": {
+    "System.Collections.Generic.List(System.String)": {
       "type": "array",
       "items": {
         "type": "string"
@@ -184,11 +198,11 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_GameObject+GetComponentResponse"
+      "$ref": "#/$defs/AIGD.GetComponentResponse"
     }
   },
   "$defs": {
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.ComponentRef": {
+    "AIGD.ComponentRef": {
       "type": "object",
       "properties": {
         "index": {
@@ -210,7 +224,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       ],
       "description": "Component reference. Used to find a Component at GameObject."
     },
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.ComponentDataShallow": {
+    "AIGD.ComponentDataShallow": {
       "type": "object",
       "properties": {
         "instanceID": {
@@ -233,7 +247,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         "isEnabled"
       ]
     },
-    "System.Collections.Generic.List<com.IvanMurzak.ReflectorNet.Model.SerializedMember>": {
+    "System.Collections.Generic.List(com.IvanMurzak.ReflectorNet.Model.SerializedMember)": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/com.IvanMurzak.ReflectorNet.Model.SerializedMember"
@@ -281,11 +295,11 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         "$ref": "#/$defs/com.IvanMurzak.ReflectorNet.Model.SerializedMember"
       }
     },
-    "com.IvanMurzak.Unity.MCP.Editor.API.Tool_GameObject+GetComponentResponse": {
+    "AIGD.GetComponentResponse": {
       "type": "object",
       "properties": {
         "Reference": {
-          "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.ComponentRef",
+          "$ref": "#/$defs/AIGD.ComponentRef",
           "description": "Reference to the component for future operations."
         },
         "Index": {
@@ -293,15 +307,15 @@ Read the /unity-initial-setup skill for detailed installation instructions.
           "description": "Index of the component in the GameObject's component list."
         },
         "Component": {
-          "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.ComponentDataShallow",
+          "$ref": "#/$defs/AIGD.ComponentDataShallow",
           "description": "Basic component information (type, enabled state)."
         },
         "Fields": {
-          "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.ReflectorNet.Model.SerializedMember>",
+          "$ref": "#/$defs/System.Collections.Generic.List(com.IvanMurzak.ReflectorNet.Model.SerializedMember)",
           "description": "Serialized fields of the component. Populated only on the legacy code path (no 'paths' / no 'viewQuery')."
         },
         "Properties": {
-          "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.ReflectorNet.Model.SerializedMember>",
+          "$ref": "#/$defs/System.Collections.Generic.List(com.IvanMurzak.ReflectorNet.Model.SerializedMember)",
           "description": "Serialized properties of the component. Populated only on the legacy code path (no 'paths' / no 'viewQuery')."
         },
         "View": {

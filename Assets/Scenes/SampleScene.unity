@@ -8910,12 +8910,12 @@ MonoBehaviour:
   ignoreSavedStatsInEditor: 1
   useInspectorDebugStatsInEditor: 1
   inspectorDebugStats:
-    intimacy: 30
-    happiness: 99
-    energy: 65
-    energy_max: 100
-    focus: 100
-    satiety: 60
+    intimacy: 1500
+    happiness: 40
+    energy: 40
+    energy_max: 250
+    focus: 500
+    satiety: 100
   enableHappinessDecay: 1
   happinessDecaySettings:
     baseDecayPerMinute: 0.5

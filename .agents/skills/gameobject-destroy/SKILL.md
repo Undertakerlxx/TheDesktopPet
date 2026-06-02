@@ -1,9 +1,15 @@
 ---
 name: gameobject-destroy
-description: Destroy GameObject and all nested GameObjects recursively in opened Prefab or in a Scene. Use 'gameobject-find' tool to find the target GameObject first.
+description: Destroy a GameObject (and all nested children) in the currently opened Prefab or active Scene. Returns the destroyed GameObject's name, path, and instance ID for confirmation. Use 'gameobject-find' to locate the target first.
 ---
 
 # GameObject / Destroy
+
+Destroy GameObject and all nested GameObjects recursively in opened Prefab or in a Scene. Use 'gameobject-find' tool to find the target GameObject first.
+
+## Behavior
+
+Validates the `gameObjectRef`, resolves it on the main thread, then calls `Object.DestroyImmediate` (the immediate variant is required for Editor-mode operations). Returns a `DestroyGameObjectResult` containing `DestroyedName`, `DestroyedPath`, and `DestroyedInstanceId` so the caller has a record of what was removed.
 
 ## How to Call
 
@@ -44,14 +50,14 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "gameObjectRef": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.GameObjectRef"
+      "$ref": "#/$defs/AIGD.GameObjectRef"
     }
   },
   "$defs": {
     "System.Type": {
       "type": "string"
     },
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.GameObjectRef": {
+    "AIGD.GameObjectRef": {
       "type": "object",
       "properties": {
         "instanceID": {
@@ -100,11 +106,11 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_GameObject+DestroyGameObjectResult"
+      "$ref": "#/$defs/AIGD.DestroyGameObjectResult"
     }
   },
   "$defs": {
-    "com.IvanMurzak.Unity.MCP.Editor.API.Tool_GameObject+DestroyGameObjectResult": {
+    "AIGD.DestroyGameObjectResult": {
       "type": "object",
       "properties": {
         "DestroyedName": {

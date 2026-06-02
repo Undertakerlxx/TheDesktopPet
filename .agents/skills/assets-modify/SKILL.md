@@ -1,17 +1,23 @@
 ---
 name: assets-modify
-description: |-
-  Modify asset file in the project. Use 'assets-get-data' tool first to inspect the asset structure before modifying. Not allowed to modify asset file in 'Packages/' folder. Please modify it in 'Assets/' folder.
-  
-  Three modification surfaces (use whichever fits the task):
-    1. 'content' — full SerializedMember override (legacy, backwards compatible).
-    2. 'pathPatches' — list of {path, value} pairs routed through Reflector.TryModifyAt.
-    3. 'jsonPatch' — JSON Merge Patch routed through Reflector.TryPatch.
-  When more than one is supplied they run in this order: jsonPatch → pathPatches → content. At least one is required.
-  Path syntax: 'fieldName', 'nested/field', 'arrayField/[i]', 'dictField/[key]'. Leading '#/' is stripped.
+description: Modify an asset file in the project. Use 'assets-get-data' first to inspect the asset structure before modifying. Not allowed to modify asset files in the 'Packages/' folder — modify them in 'Assets/'. Three modification surfaces are available (content, pathPatches, jsonPatch) — see the skill body for details.
 ---
 
 # Assets / Modify
+
+## Three modification surfaces
+
+Use whichever fits the task:
+
+1. `content` — full `SerializedMember` override (legacy, backwards compatible).
+2. `pathPatches` — list of `{path, value}` pairs routed through `Reflector.TryModifyAt`.
+3. `jsonPatch` — JSON Merge Patch routed through `Reflector.TryPatch`.
+
+When more than one is supplied they run in this order: `jsonPatch` → `pathPatches` → `content`. At least one is required.
+
+## Path syntax
+
+`fieldName`, `nested/field`, `arrayField/[i]`, `dictField/[key]`. Leading `#/` is stripped.
 
 ## How to Call
 
@@ -58,13 +64,13 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "assetRef": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.AssetObjectRef"
+      "$ref": "#/$defs/AIGD.AssetObjectRef"
     },
     "content": {
       "$ref": "#/$defs/com.IvanMurzak.ReflectorNet.Model.SerializedMember"
     },
     "pathPatches": {
-      "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch>"
+      "$ref": "#/$defs/System.Collections.Generic.List(AIGD.PathPatch)"
     },
     "jsonPatch": {
       "type": "string"
@@ -74,7 +80,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
     "System.Type": {
       "type": "string"
     },
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.AssetObjectRef": {
+    "AIGD.AssetObjectRef": {
       "type": "object",
       "properties": {
         "instanceID": {
@@ -141,7 +147,7 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       ],
       "additionalProperties": false
     },
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch": {
+    "AIGD.PathPatch": {
       "type": "object",
       "properties": {
         "Path": {
@@ -154,10 +160,10 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         }
       }
     },
-    "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch>": {
+    "System.Collections.Generic.List(AIGD.PathPatch)": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch"
+        "$ref": "#/$defs/AIGD.PathPatch"
       }
     }
   },
@@ -176,11 +182,11 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/System.String[]"
+      "$ref": "#/$defs/System.String-1"
     }
   },
   "$defs": {
-    "System.String[]": {
+    "System.String-1": {
       "type": "array",
       "items": {
         "type": "string"

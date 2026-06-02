@@ -1,17 +1,23 @@
 ---
 name: gameobject-component-modify
-description: |-
-  Modify a specific Component on a GameObject in opened Prefab or in a Scene. Allows direct modification of component fields and properties without wrapping in GameObject structure. Use 'gameobject-component-get' first to inspect the component structure before modifying.
-  
-  Three modification surfaces (use whichever fits the task):
-    1. 'componentDiff' — full SerializedMember diff (legacy, backwards compatible).
-    2. 'pathPatches' — list of {path, value} pairs routed through Reflector.TryModifyAt; atomic per-path modification, multiple entries can target different depths.
-    3. 'jsonPatch' — a JSON Merge Patch (RFC 7396, extended with [i]/[key] notation) routed through Reflector.TryPatch; multiple fields at any depth in a single call.
-  When more than one is supplied they run in this order: jsonPatch → pathPatches → componentDiff. At least one is required.
-  Path syntax: 'fieldName', 'nested/field', 'arrayField/[i]', 'dictField/[key]'. Leading '#/' is stripped.
+description: Modify a specific Component on a GameObject in opened Prefab or in a Scene. Allows direct modification of component fields and properties without wrapping in GameObject structure. Use 'gameobject-component-get' first to inspect the component structure before modifying. Three modification surfaces are available (componentDiff, pathPatches, jsonPatch) — see the skill body for details.
 ---
 
 # GameObject / Component / Modify
+
+## Three modification surfaces
+
+Use whichever fits the task:
+
+1. `componentDiff` — full `SerializedMember` diff (legacy, backwards compatible).
+2. `pathPatches` — list of `{path, value}` pairs routed through `Reflector.TryModifyAt`; atomic per-path modification, multiple entries can target different depths.
+3. `jsonPatch` — a JSON Merge Patch (RFC 7396, extended with `[i]`/`[key]` notation) routed through `Reflector.TryPatch`; multiple fields at any depth in a single call.
+
+When more than one is supplied they run in this order: `jsonPatch` → `pathPatches` → `componentDiff`. At least one is required.
+
+## Path syntax
+
+`fieldName`, `nested/field`, `arrayField/[i]`, `dictField/[key]`. Leading `#/` is stripped.
 
 ## How to Call
 
@@ -62,16 +68,16 @@ Any unknown or invalid fields and properties will be reported in the response. |
   "type": "object",
   "properties": {
     "gameObjectRef": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.GameObjectRef"
+      "$ref": "#/$defs/AIGD.GameObjectRef"
     },
     "componentRef": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.ComponentRef"
+      "$ref": "#/$defs/AIGD.ComponentRef"
     },
     "componentDiff": {
       "$ref": "#/$defs/com.IvanMurzak.ReflectorNet.Model.SerializedMember"
     },
     "pathPatches": {
-      "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch>"
+      "$ref": "#/$defs/System.Collections.Generic.List(AIGD.PathPatch)"
     },
     "jsonPatch": {
       "type": "string"
@@ -81,7 +87,7 @@ Any unknown or invalid fields and properties will be reported in the response. |
     "System.Type": {
       "type": "string"
     },
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.GameObjectRef": {
+    "AIGD.GameObjectRef": {
       "type": "object",
       "properties": {
         "instanceID": {
@@ -114,7 +120,7 @@ Any unknown or invalid fields and properties will be reported in the response. |
       ],
       "description": "Find GameObject in opened Prefab or in the active Scene."
     },
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.ComponentRef": {
+    "AIGD.ComponentRef": {
       "type": "object",
       "properties": {
         "index": {
@@ -178,7 +184,7 @@ Any unknown or invalid fields and properties will be reported in the response. |
       ],
       "additionalProperties": false
     },
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch": {
+    "AIGD.PathPatch": {
       "type": "object",
       "properties": {
         "Path": {
@@ -191,10 +197,10 @@ Any unknown or invalid fields and properties will be reported in the response. |
         }
       }
     },
-    "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch>": {
+    "System.Collections.Generic.List(AIGD.PathPatch)": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch"
+        "$ref": "#/$defs/AIGD.PathPatch"
       }
     }
   },
@@ -214,11 +220,11 @@ Any unknown or invalid fields and properties will be reported in the response. |
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_GameObject+ModifyComponentResponse"
+      "$ref": "#/$defs/AIGD.ModifyComponentResponse"
     }
   },
   "$defs": {
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.ComponentRef": {
+    "AIGD.ComponentRef": {
       "type": "object",
       "properties": {
         "index": {
@@ -240,7 +246,7 @@ Any unknown or invalid fields and properties will be reported in the response. |
       ],
       "description": "Component reference. Used to find a Component at GameObject."
     },
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.ComponentDataShallow": {
+    "AIGD.ComponentDataShallow": {
       "type": "object",
       "properties": {
         "instanceID": {
@@ -263,13 +269,13 @@ Any unknown or invalid fields and properties will be reported in the response. |
         "isEnabled"
       ]
     },
-    "System.String[]": {
+    "System.String-1": {
       "type": "array",
       "items": {
         "type": "string"
       }
     },
-    "com.IvanMurzak.Unity.MCP.Editor.API.Tool_GameObject+ModifyComponentResponse": {
+    "AIGD.ModifyComponentResponse": {
       "type": "object",
       "properties": {
         "Success": {
@@ -277,7 +283,7 @@ Any unknown or invalid fields and properties will be reported in the response. |
           "description": "Whether the modification was successful."
         },
         "Reference": {
-          "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.ComponentRef",
+          "$ref": "#/$defs/AIGD.ComponentRef",
           "description": "Reference to the modified component."
         },
         "Index": {
@@ -285,11 +291,11 @@ Any unknown or invalid fields and properties will be reported in the response. |
           "description": "Index of the component in the GameObject's component list."
         },
         "Component": {
-          "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.ComponentDataShallow",
+          "$ref": "#/$defs/AIGD.ComponentDataShallow",
           "description": "Updated component information after modification."
         },
         "Logs": {
-          "$ref": "#/$defs/System.String[]",
+          "$ref": "#/$defs/System.String-1",
           "description": "Log of modifications made and any warnings/errors encountered."
         }
       },

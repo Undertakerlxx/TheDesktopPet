@@ -258,17 +258,44 @@ namespace DesktopPet.UI
             int happinessRestore = recipe.happinessRestore + (matchedPreference ? PreferredHappinessBonus : 0);
             int intimacyRestore = matchedPreference ? PreferredIntimacyBonus : 0;
 
-            if (petStatsManager == null || !petStatsManager.ApplyFeedingEffect(recipe.satietyRestore, happinessRestore, intimacyRestore))
+            ThePetStats stats = petStatsManager != null ? petStatsManager.current_stats : null;
+            if (petStatsManager == null || stats == null)
             {
-                return $"饱食+{recipe.satietyRestore} 开心+{happinessRestore}";
+                return BuildStatFeedback(recipe.satietyRestore, happinessRestore, intimacyRestore, intimacyRestore > 0);
             }
 
-            if (intimacyRestore > 0)
+            float satietyBefore = stats.satiety;
+            float happinessBefore = stats.happiness;
+            float intimacyBefore = stats.intimacy;
+
+            if (!petStatsManager.ApplyFeedingEffect(recipe.satietyRestore, happinessRestore, intimacyRestore))
             {
-                return $"饱食+{recipe.satietyRestore} 开心+{happinessRestore} 亲密+{intimacyRestore}";
+                return BuildStatFeedback(recipe.satietyRestore, happinessRestore, intimacyRestore, intimacyRestore > 0);
             }
 
-            return $"饱食+{recipe.satietyRestore} 开心+{happinessRestore}";
+            return BuildStatFeedback(
+                Mathf.Max(0f, stats.satiety - satietyBefore),
+                Mathf.Max(0f, stats.happiness - happinessBefore),
+                Mathf.Max(0f, stats.intimacy - intimacyBefore),
+                intimacyRestore > 0);
+        }
+
+        private static string BuildStatFeedback(float satietyDelta, float happinessDelta, float intimacyDelta, bool includeIntimacy)
+        {
+            string feedback = "\u9971\u98df+" + FormatStatDelta(satietyDelta) + " \u5f00\u5fc3+" + FormatStatDelta(happinessDelta);
+            if (includeIntimacy)
+            {
+                feedback += " \u4eb2\u5bc6+" + FormatStatDelta(intimacyDelta);
+            }
+
+            return feedback;
+        }
+
+        private static string FormatStatDelta(float value)
+        {
+            return Mathf.Approximately(value, Mathf.Round(value))
+                ? Mathf.RoundToInt(value).ToString()
+                : value.ToString("0.#");
         }
 
         private int GetDishAmount(RecipeId recipeId)

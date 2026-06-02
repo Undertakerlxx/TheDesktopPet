@@ -1,17 +1,23 @@
 ---
 name: gameobject-modify
-description: |-
-  Modify GameObject fields and properties in opened Prefab or in a Scene. You can modify multiple GameObjects at once. Just provide the same number of GameObject references and SerializedMember objects.
-  
-  Three modification surfaces (per GameObject — parallel arrays must have the same length as gameObjectRefs):
-    1. 'gameObjectDiffs' — full SerializedMember diff per GameObject (legacy, backwards compatible).
-    2. 'pathPatchesPerGameObject' — list of {path, value} patches per GameObject routed through Reflector.TryModifyAt; atomic per-path modification.
-    3. 'jsonPatchesPerGameObject' — JSON Merge Patch per GameObject routed through Reflector.TryPatch.
-  When more than one is supplied for the same GameObject they run in this order: jsonPatch → pathPatches → diff. At least one of the three is required.
-  Path syntax: 'fieldName', 'nested/field', 'arrayField/[i]', 'dictField/[key]'.
+description: Modify GameObject fields and properties in opened Prefab or in a Scene. You can modify multiple GameObjects at once. Just provide the same number of GameObject references and SerializedMember objects. Three modification surfaces are available per GameObject (gameObjectDiffs, pathPatchesPerGameObject, jsonPatchesPerGameObject) — see the skill body for details.
 ---
 
 # GameObject / Modify
+
+## Three modification surfaces
+
+Per GameObject — parallel arrays must have the same length as `gameObjectRefs`:
+
+1. `gameObjectDiffs` — full `SerializedMember` diff per GameObject (legacy, backwards compatible).
+2. `pathPatchesPerGameObject` — list of `{path, value}` patches per GameObject routed through `Reflector.TryModifyAt`; atomic per-path modification.
+3. `jsonPatchesPerGameObject` — JSON Merge Patch per GameObject routed through `Reflector.TryPatch`.
+
+When more than one is supplied for the same GameObject they run in this order: `jsonPatch` → `pathPatches` → `diff`. At least one of the three is required.
+
+## Path syntax
+
+`fieldName`, `nested/field`, `arrayField/[i]`, `dictField/[key]`.
 
 ## How to Call
 
@@ -58,20 +64,20 @@ Read the /unity-initial-setup skill for detailed installation instructions.
   "type": "object",
   "properties": {
     "gameObjectRefs": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.GameObjectRefList"
+      "$ref": "#/$defs/AIGD.GameObjectRefList"
     },
     "gameObjectDiffs": {
       "$ref": "#/$defs/com.IvanMurzak.ReflectorNet.Model.SerializedMemberList"
     },
     "pathPatchesPerGameObject": {
-      "$ref": "#/$defs/System.Collections.Generic.List<System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch>>"
+      "$ref": "#/$defs/System.Collections.Generic.List(System.Collections.Generic.List(AIGD.PathPatch))"
     },
     "jsonPatchesPerGameObject": {
-      "$ref": "#/$defs/System.Collections.Generic.List<System.String>"
+      "$ref": "#/$defs/System.Collections.Generic.List(System.String)"
     }
   },
   "$defs": {
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.GameObjectRef": {
+    "AIGD.GameObjectRef": {
       "type": "object",
       "properties": {
         "instanceID": {
@@ -107,10 +113,10 @@ Read the /unity-initial-setup skill for detailed installation instructions.
     "System.Type": {
       "type": "string"
     },
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.GameObjectRefList": {
+    "AIGD.GameObjectRefList": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.GameObjectRef",
+        "$ref": "#/$defs/AIGD.GameObjectRef",
         "description": "Find GameObject in opened Prefab or in the active Scene."
       },
       "description": "Array of GameObjects in opened Prefab or in the active Scene."
@@ -157,13 +163,13 @@ Read the /unity-initial-setup skill for detailed installation instructions.
       ],
       "additionalProperties": false
     },
-    "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch>": {
+    "System.Collections.Generic.List(AIGD.PathPatch)": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch"
+        "$ref": "#/$defs/AIGD.PathPatch"
       }
     },
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch": {
+    "AIGD.PathPatch": {
       "type": "object",
       "properties": {
         "Path": {
@@ -176,13 +182,13 @@ Read the /unity-initial-setup skill for detailed installation instructions.
         }
       }
     },
-    "System.Collections.Generic.List<System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch>>": {
+    "System.Collections.Generic.List(System.Collections.Generic.List(AIGD.PathPatch))": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch>"
+        "$ref": "#/$defs/System.Collections.Generic.List(AIGD.PathPatch)"
       }
     },
-    "System.Collections.Generic.List<System.String>": {
+    "System.Collections.Generic.List(System.String)": {
       "type": "array",
       "items": {
         "type": "string"

@@ -1,17 +1,25 @@
 ---
 name: object-modify
-description: |-
-  Modify the specified Unity Object. Allows direct modification of object fields and properties. Use 'object-get-data' first to inspect the object structure before modifying.
-  
-  Three modification surfaces (use whichever fits the task):
-    1. 'objectDiff' — full SerializedMember diff (legacy, backwards compatible).
-    2. 'pathPatches' — list of {path, value} pairs routed through Reflector.TryModifyAt; atomic per-path modification, multiple entries can target different depths.
-    3. 'jsonPatch' — a JSON Merge Patch (RFC 7396, extended with [i]/[key] notation) routed through Reflector.TryPatch; multiple fields at any depth in a single call.
-  When more than one is supplied they run in this order: jsonPatch → pathPatches → objectDiff. At least one is required.
-  Path syntax: 'fieldName', 'nested/field', 'arrayField/[i]', 'dictField/[key]'. Leading '#/' is stripped.
+description: Modify a Unity `UnityEngine.Object`'s serializable fields/properties. Three modification surfaces are available (`objectDiff`, `pathPatches`, `jsonPatch`) — see the skill body. Use 'object-get-data' first to inspect the object structure.
 ---
 
 # Object / Modify
+
+Modify the specified Unity Object. Allows direct modification of object fields and properties. Use 'object-get-data' first to inspect the object structure before modifying.
+
+## Three modification surfaces
+
+Use whichever fits the task:
+
+1. `objectDiff` — full `SerializedMember` diff (legacy, backwards compatible).
+2. `pathPatches` — list of `{path, value}` pairs routed through `Reflector.TryModifyAt`; atomic per-path modification, multiple entries can target different depths.
+3. `jsonPatch` — a JSON Merge Patch (RFC 7396, extended with `[i]`/`[key]` notation) routed through `Reflector.TryPatch`; multiple fields at any depth in a single call.
+
+When more than one is supplied they run in this order: `jsonPatch` → `pathPatches` → `objectDiff`. At least one is required.
+
+## Path syntax
+
+`fieldName`, `nested/field`, `arrayField/[i]`, `dictField/[key]`. Leading `#/` is stripped.
 
 ## How to Call
 
@@ -60,20 +68,20 @@ Any unknown or invalid fields and properties will be reported in the response. |
   "type": "object",
   "properties": {
     "objectRef": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.ObjectRef"
+      "$ref": "#/$defs/AIGD.ObjectRef"
     },
     "objectDiff": {
       "$ref": "#/$defs/com.IvanMurzak.ReflectorNet.Model.SerializedMember"
     },
     "pathPatches": {
-      "$ref": "#/$defs/System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch>"
+      "$ref": "#/$defs/System.Collections.Generic.List(AIGD.PathPatch)"
     },
     "jsonPatch": {
       "type": "string"
     }
   },
   "$defs": {
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.ObjectRef": {
+    "AIGD.ObjectRef": {
       "type": "object",
       "properties": {
         "instanceID": {
@@ -128,7 +136,7 @@ Any unknown or invalid fields and properties will be reported in the response. |
       ],
       "additionalProperties": false
     },
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch": {
+    "AIGD.PathPatch": {
       "type": "object",
       "properties": {
         "Path": {
@@ -141,10 +149,10 @@ Any unknown or invalid fields and properties will be reported in the response. |
         }
       }
     },
-    "System.Collections.Generic.List<com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch>": {
+    "System.Collections.Generic.List(AIGD.PathPatch)": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.PathPatch"
+        "$ref": "#/$defs/AIGD.PathPatch"
       }
     }
   },
@@ -163,11 +171,11 @@ Any unknown or invalid fields and properties will be reported in the response. |
   "type": "object",
   "properties": {
     "result": {
-      "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Editor.API.Tool_Object+ModifyObjectResponse"
+      "$ref": "#/$defs/AIGD.ModifyObjectResponse"
     }
   },
   "$defs": {
-    "com.IvanMurzak.Unity.MCP.Runtime.Data.ObjectRef": {
+    "AIGD.ObjectRef": {
       "type": "object",
       "properties": {
         "instanceID": {
@@ -222,13 +230,13 @@ Any unknown or invalid fields and properties will be reported in the response. |
         "$ref": "#/$defs/com.IvanMurzak.ReflectorNet.Model.SerializedMember"
       }
     },
-    "System.String[]": {
+    "System.String-1": {
       "type": "array",
       "items": {
         "type": "string"
       }
     },
-    "com.IvanMurzak.Unity.MCP.Editor.API.Tool_Object+ModifyObjectResponse": {
+    "AIGD.ModifyObjectResponse": {
       "type": "object",
       "properties": {
         "Success": {
@@ -236,7 +244,7 @@ Any unknown or invalid fields and properties will be reported in the response. |
           "description": "Whether the modification was successful."
         },
         "Reference": {
-          "$ref": "#/$defs/com.IvanMurzak.Unity.MCP.Runtime.Data.ObjectRef",
+          "$ref": "#/$defs/AIGD.ObjectRef",
           "description": "Reference to the modified object."
         },
         "Data": {
@@ -244,7 +252,7 @@ Any unknown or invalid fields and properties will be reported in the response. |
           "description": "Updated object data after modification."
         },
         "Logs": {
-          "$ref": "#/$defs/System.String[]",
+          "$ref": "#/$defs/System.String-1",
           "description": "Log of modifications made and any warnings/errors encountered."
         }
       },
