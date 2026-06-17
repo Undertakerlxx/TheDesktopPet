@@ -14,6 +14,10 @@ namespace DesktopPet.UI
 
         private float hideAtTime;
 
+        public bool IsPromptVisible => promptText != null
+            && promptText.gameObject.activeSelf
+            && Time.time < hideAtTime;
+
         private void Awake()
         {
             EnsurePromptText();

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using DesktopPet.AICompanion;
 using UnityEngine;
 
 public class DragState : ThePetState
@@ -18,7 +19,7 @@ public class DragState : ThePetState
 
     protected override void OnExit(ThePet thePet)
     {
-
+        AICompanionDialogueController.NotifyEvent(AICompanionEventType.PetDragged);
     }
 
     protected override void OnStep(ThePet thePet)

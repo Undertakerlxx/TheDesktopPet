@@ -28,6 +28,16 @@ namespace DesktopPet.UI
         public string model;
     }
 
+    [Serializable]
+    public class AIChatRequestOptions
+    {
+        public string systemPrompt;
+        public int timeoutSeconds = 45;
+        public int maxTokens;
+        public float temperature = -1f;
+        public bool disableThinking;
+    }
+
     public static class AIChatService
     {
         private const string DefaultSystemPrompt = "You are a concise desktop pet assistant.";
@@ -35,6 +45,16 @@ namespace DesktopPet.UI
         public static IEnumerator SendChatCompletion(
             AIChatRequestConfig config,
             List<AIChatMessageData> conversation,
+            Action<string> onSuccess,
+            Action<string> onError)
+        {
+            yield return SendChatCompletion(config, conversation, null, onSuccess, onError);
+        }
+
+        public static IEnumerator SendChatCompletion(
+            AIChatRequestConfig config,
+            List<AIChatMessageData> conversation,
+            AIChatRequestOptions options,
             Action<string> onSuccess,
             Action<string> onError)
         {
@@ -62,17 +82,11 @@ namespace DesktopPet.UI
                 yield break;
             }
 
-            ChatCompletionsRequest requestPayload = new ChatCompletionsRequest
-            {
-                model = config.model.Trim(),
-                messages = BuildMessages(conversation)
-            };
-
-            byte[] body = Encoding.UTF8.GetBytes(JsonUtility.ToJson(requestPayload));
+            byte[] body = Encoding.UTF8.GetBytes(BuildRequestJson(config.model.Trim(), conversation, options));
             using UnityWebRequest request = new UnityWebRequest(config.endpoint.Trim(), UnityWebRequest.kHttpVerbPOST);
             request.uploadHandler = new UploadHandlerRaw(body);
             request.downloadHandler = new DownloadHandlerBuffer();
-            request.timeout = 45;
+            request.timeout = Mathf.Max(1, options?.timeoutSeconds ?? 45);
             request.SetRequestHeader("Content-Type", "application/json");
             request.SetRequestHeader("Authorization", $"Bearer {config.apiKey.Trim()}");
 
@@ -103,11 +117,47 @@ namespace DesktopPet.UI
             onSuccess?.Invoke(content.Trim());
         }
 
-        private static AIChatMessageData[] BuildMessages(List<AIChatMessageData> conversation)
+        private static string BuildRequestJson(string model, List<AIChatMessageData> conversation, AIChatRequestOptions options)
         {
+            AIChatMessageData[] messages = BuildMessages(conversation, options?.systemPrompt);
+            if (ShouldUseTunedRequest(options))
+            {
+                TunedChatCompletionsRequest tunedRequest = new TunedChatCompletionsRequest
+                {
+                    model = model,
+                    messages = messages,
+                    max_tokens = Mathf.Max(1, options.maxTokens),
+                    temperature = options.temperature >= 0f ? Mathf.Clamp(options.temperature, 0f, 2f) : 0.8f,
+                    thinking = options.disableThinking ? new ThinkingData { type = "disabled" } : null
+                };
+
+                return JsonUtility.ToJson(tunedRequest);
+            }
+
+            ChatCompletionsRequest request = new ChatCompletionsRequest
+            {
+                model = model,
+                messages = messages
+            };
+
+            return JsonUtility.ToJson(request);
+        }
+
+        private static bool ShouldUseTunedRequest(AIChatRequestOptions options)
+        {
+            return options != null
+                && (options.maxTokens > 0 || options.temperature >= 0f || options.disableThinking);
+        }
+
+        private static AIChatMessageData[] BuildMessages(List<AIChatMessageData> conversation, string systemPrompt)
+        {
+            string resolvedSystemPrompt = string.IsNullOrWhiteSpace(systemPrompt)
+                ? DefaultSystemPrompt
+                : systemPrompt.Trim();
+
             List<AIChatMessageData> messages = new List<AIChatMessageData>
             {
-                new AIChatMessageData("system", DefaultSystemPrompt)
+                new AIChatMessageData("system", resolvedSystemPrompt)
             };
 
             if (conversation != null && conversation.Count > 0)
@@ -160,6 +210,22 @@ namespace DesktopPet.UI
         {
             public string model;
             public AIChatMessageData[] messages;
+        }
+
+        [Serializable]
+        private class TunedChatCompletionsRequest
+        {
+            public string model;
+            public AIChatMessageData[] messages;
+            public int max_tokens;
+            public float temperature;
+            public ThinkingData thinking;
+        }
+
+        [Serializable]
+        private class ThinkingData
+        {
+            public string type;
         }
 
         [Serializable]
