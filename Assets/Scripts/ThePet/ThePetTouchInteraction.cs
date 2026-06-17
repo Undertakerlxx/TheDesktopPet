@@ -1,4 +1,5 @@
 using DesktopPet.Achievements;
+using DesktopPet.AICompanion;
 using DesktopPet.Save;
 using DesktopPet.UI;
 using UnityEngine;
@@ -68,6 +69,7 @@ public class ThePetTouchInteraction : MonoBehaviour
         inputManager?.NotifyInteraction();
         AchievementEventRecorder.Record(AchievementEventType.Touch);
         pet.states.Change<StretchState>();
+        AICompanionDialogueController.NotifyEvent(AICompanionEventType.PetClicked);
     }
 
     private void ShowCooldownPrompt()
@@ -91,7 +93,11 @@ public class ThePetTouchInteraction : MonoBehaviour
 
         if (promptUI != null)
         {
-            promptUI.ShowPrompt(message, 1.2f);
+            if (!promptUI.IsPromptVisible)
+            {
+                promptUI.ShowPrompt(message, 1.2f);
+            }
+
             return;
         }
 
